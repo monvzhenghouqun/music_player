@@ -122,7 +122,7 @@ app.listen(config.Web_Server_Port, async() => {
             await loadDataToCServer(sendCommandToCServer);  // 将数据从 SQLite 加载到 C_Server 的内存中 ; 传入 sendCommandToCServer 函数给 loader 使用
             console.log(`[Web_Server]  System initialization complete. All data loaded to C_Server.`);
         } else {
-             throw new Error("Database initialization failed.");
+            throw new Error("Database initialization failed.");
         }
 
     } catch (e) {

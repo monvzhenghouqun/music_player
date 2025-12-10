@@ -6,23 +6,69 @@
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib") 
 
+#include "cJSON.h"
+
 #define PORT 8080
 #define BUFFER_SIZE 2048      //缓冲区大小
 #define MAX_CONNECTIONS 1     //最大连接等待数
+#define MAX_COMMAND_LENGTH 16     //存储解析出的命令类型
 
 // 命令执行逻辑，待确认
 void execute_command(const char* command, char* response_buffer) {
-    if (strncmp(command, "PING", 4) == 0) {
-        strcpy(response_buffer, "PONG (C Core is running)");
-    } else if (strncmp(command, "SEARCH", 6) == 0) {
-        //模拟返回json格式搜索结果
-        strcpy(response_buffer, "{\"status\":\"ok\", \"results\":[{\"name\":\"test song\"}]}");
-    } else if (strncmp(command, "PLAY", 4) == 0) {
-        //模拟返回json格式播放成功提示
-        strcpy(response_buffer, "{\"status\":\"ok\", \"message\":\"Playing next song\"}");
-    } else {
-        strcpy(response_buffer, "{\"status\":\"error\", \"message\":\"Unknown Command\"}");
+    char cmd_type[MAX_COMMAND_LENGTH + 1] = {0};  
+    const char* payload = NULL;   // 命令附带的负载数据，如"LOAD_DATA [1,2,3]"中负载数据[1,2,3]
+
+    if (sscanf(command, "%s", cmd_type) != 1) {
+        strcpy(response_buffer, "{
+            \"status\":\"error\",
+            \"message\":\"Invalid empty command\"
+        }");  //  读取传来指令，若为空返回错误
+        return;
     }
+
+    payload = strchr(command, ' '); 
+    if (payload != NULL) {
+        payload++; 
+        while (*payload && isspace((unsigned char)*payload)) {    // 判断是否为空白字符
+            payload++;  // 跳过连续的空格
+        }   
+    }
+    
+    if (strcmp(cmd_type, "PING") == 0) {
+        strcpy(response_buffer, "{
+            \"status\":\"PONG\", 
+            \"message\":\"C_Server is running\"
+        }");
+
+    } else if (strcmp(cmd_type, "LOAD_DATA") == 0) {
+        if (payload && strlen(payload) > 0) {   // 检查负载是否存在且非空
+            cJSON *json_array = cJSON_Parse(payload); // 解析 payload 中的 JSON 字符串
+        
+            if (json_array == NULL) {
+                strcpy(response_buffer, "{
+                    \"status\":\"error\", 
+                    \"message\":\"Failed to parse JSON payload\"
+                }");
+            } else {
+                int array_size = cJSON_GetArraySize(json_array); // 获取 JSON 数组的元素个数
+            
+                cJSON_Delete(json_array); // 释放 cJSON 解析后的内存（必须！否则内存泄漏）
+                snprintf(response_buffer, BUFFER_SIZE, "{
+                    \"status\":\"ok\",
+                    \"message\":\"Successfully indexed %d songs\"
+                }", array_size);  //  构建成功响应：告诉调用方成功索引了多少首歌曲
+            }
+        } else {
+            strcpy(response_buffer, "{
+                \"status\":\"error\",
+                \"message\":\"LOAD_DATA command requires data\"
+            }");  //  有 LOAD_DATA 命令，但无负载（比如只传了 "LOAD_DATA" 没传 JSON）
+        }
+    }
+
+
+
+
 }
 
 // 客户端请求处理函数

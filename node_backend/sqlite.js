@@ -14,6 +14,7 @@ async function initializeDatabase() {
 
         console.log(`[SQLite] Database connected: ${config.DB_File}`);
 
+        console.log("[SQLite] Trying to create 'songs' table..."); // 调试
         await db.exec(`
             CREATE TABLE IF NOT EXISTS songs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +28,9 @@ async function initializeDatabase() {
                 create_time DATETIME DEFAULT CURRENT_TIMESTAMP 
             );
         `);
-
+        console.log("[SQLite] 'songs' table created/verified."); // 调试
+        
+        console.log("[SQLite] Trying to create 'playlists' table..."); // 调试
         await db.exec(`
             CREATE TABLE IF NOT EXISTS playlists (
                 playlist_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +38,9 @@ async function initializeDatabase() {
                 create_time DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
-    
+        console.log("[SQLite] 'playlists' table created/verified."); // 调试
+
+        console.log("[SQLite] Trying to create 'playlist_songs' table..."); // 调试
         await db.exec(`
             CREATE TABLE IF NOT EXISTS playlist_songs (
                 playlist_id INTEGER,
@@ -46,6 +51,7 @@ async function initializeDatabase() {
                 FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
             );
         `);
+        console.log("[SQLite] 'playlist_songs' table created/verified."); // 调试
 
         const count = await db.get("SELECT COUNT(*) as count FROM songs");
             
@@ -60,9 +66,9 @@ async function initializeDatabase() {
             // 插入一个测试歌单
             await db.run("INSERT INTO playlists (name) VALUES (?)", '我的最爱');
 
-            return true;
+            console.log("[SQLite] Initial data inserted."); // 调试
         }
-
+        return true;
     } catch (e) {
         console.error('[SQLite] Database initialization failed:', e.message);
         return false;
