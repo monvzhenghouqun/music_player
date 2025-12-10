@@ -43,7 +43,7 @@ async function initializeDatabase() {
         console.log("[SQLite] 'playlists' table created/verified."); // 调试
 
         console.log("[SQLite] Trying to create 'playlist_songs' table..."); // 调试
-        //关联表 - 测试
+        //关联表 - 不完全测试-未验证
         await db.exec(`
             CREATE TABLE IF NOT EXISTS playlist_songs (
                 playlist_id INTEGER,

@@ -19,7 +19,8 @@ void execute_command(const char* command, char* response_buffer) {
     const char* payload = NULL;   // 命令附带的负载数据，如"LOAD_DATA [1,2,3]"中负载数据[1,2,3]
     
     if (sscanf(command, "%s", cmd_type) != 1) {
-        strncpy(response_buffer, "{\"status\":\"error\",\"message\":\"Invalid empty command\"}");  //  读取传来指令，若为空返回错误
+        strncpy(response_buffer, "{\"status\":\"error\",\"message\":\"Invalid empty command\"}",BUFFER_SIZE - 1);  //  读取传来指令，若为空返回错误
+        response_buffer[BUFFER_SIZE - 1] = '\0';
         return;
     }
 
@@ -32,14 +33,15 @@ void execute_command(const char* command, char* response_buffer) {
     }
     
     if (strcmp(cmd_type, "PING") == 0) {
-        strncpy(response_buffer, "{\"status\":\"PONG\", \"message\":\"C_Server is running\"}");
-
+        strncpy(response_buffer, "{\"status\":\"PONG\", \"message\":\"C_Server is running\"}",BUFFER_SIZE - 1);
+        response_buffer[BUFFER_SIZE - 1] = '\0';
     } else if (strcmp(cmd_type, "LOAD_DATA") == 0) {
         if (payload && strlen(payload) > 0) {   // 检查负载是否存在且非空
             cJSON *json_array = cJSON_Parse(payload); // 解析 payload 中的 JSON 字符串
         
             if (json_array == NULL) {
-                strcpy(response_buffer, "{\"status\":\"error\", \"message\":\"Failed to parse JSON payload\"}");
+                strncpy(response_buffer, "{\"status\":\"error\", \"message\":\"Failed to parse JSON payload\"}",BUFFER_SIZE - 1);
+                response_buffer[BUFFER_SIZE - 1] = '\0';
             } else {
                 int array_size = cJSON_GetArraySize(json_array); // 获取 JSON 数组的元素个数
                 // 添加 数据结构 插入逻辑（后续业务逻辑）
@@ -47,7 +49,8 @@ void execute_command(const char* command, char* response_buffer) {
                 snprintf(response_buffer, BUFFER_SIZE, "{\"status\":\"ok\",\"message\":\"Successfully indexed %d songs\"}", array_size);  //  构建成功响应：告诉调用方成功索引了多少首歌曲
             }
         } else {
-            strncpy(response_buffer, "{\"status\":\"error\",\"message\":\"LOAD_DATA command requires data\"}");  //  有 LOAD_DATA 命令，但无负载（json文件）
+            strncpy(response_buffer, "{\"status\":\"error\",\"message\":\"LOAD_DATA command requires data\"}",BUFFER_SIZE - 1);  //  有 LOAD_DATA 命令，但无负载（json文件）
+            response_buffer[BUFFER_SIZE - 1] = '\0';
         }
     } else {
         snprintf(response_buffer, BUFFER_SIZE, "{\"status\":\"error\", \"message\":\"Unknown Command: %s\"}", cmd_type);  //  未知指令，返回
@@ -69,10 +72,10 @@ void handle_client_request(SOCKET client_socket) {
         buffer[bytes_received] = '\0'; 
         printf("Received command: %s\n", buffer);  // 测试
 
-        execute_command(buffer, response_buffer);
+        execute_command(buffer, response);
 
-        const char* send_ptr = response_buffer;  // 指向要发送的数据起始位置
-        int total_to_send = strlen(response_buffer);  // 要发送的总字节数（JSON响应长度）
+        const char* send_ptr = response;  // 指向要发送的数据起始位置
+        int total_to_send = strlen(response);  // 要发送的总字节数（JSON响应长度）
         int total_sent = 0;   // 已发送的字节数
         while (total_sent < total_to_send) {
             int bytes_sent = send(client_socket, send_ptr + total_sent, total_to_send - total_sent, 0);  // 每次发送"未发完的剩余数据"
@@ -141,7 +144,7 @@ int main() {
     }
 
     //监听连接（让服务端Socket进入“监听状态”，等待客户端连接）
-    int listen_result = listen(server_fd, MAX_CONNECTIONS);  //listen()函数：服务端Socket；最大等待连接数（MAX_CONNECTIONS=1）
+    int listen_result = listen(server_fd, MAX_CONNECTIONS);  //服务端Socket；最大等待连接数（MAX_CONNECTIONS=1）
     if (listen_result == SOCKET_ERROR) {
         printf("Listen failed. Error: %d\n", WSAGetLastError());
         closesocket(server_fd);
@@ -161,7 +164,7 @@ int main() {
         // (struct sockaddr *)&address：存储客户端的IP和端口；&addrlen：地址结构体大小
         new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
         if (new_socket == INVALID_SOCKET) { 
-            printf("Accept failed. Error: %d\n", WSAGetLastError());   //连接失败，跳过等待下一次来凝结
+            printf("Accept failed. Error: %d\n", WSAGetLastError());   //连接失败，跳过等待下一次来连接
             continue;
         }
 
@@ -180,8 +183,8 @@ int main() {
 
 //server 启动
 
-// (失效-下方添加了cJson的编译)
+// (失效)
 //gcc socket_server.c -o socket_server -mconsole -lws2_32 ;  if ($?) { .\socket_server }
 
-// 现用
+// 现用（添加了cJson的编译）
 //gcc socket_server.c cJSON.c -o socket_server -mconsole -lws2_32 ;  if ($?) { .\socket_server }
