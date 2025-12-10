@@ -4,9 +4,12 @@ const app = express();
 
 const net = require('net');
 
-const Web_Server_Port = 3000; 
-const C_Server_Port = 8080;   
-const C_Server_Host = '127.0.0.1';   //IP 地址，本机
+const config = require('./config'); 
+// const Web_Server_Port = 3000; 
+// const C_Server_Port = 8080;   
+// const C_Server_Host = '127.0.0.1';   //IP 地址，本机
+
+const { initializeDatabase, loadDataToCServer } = require('./sqlite');
 
 // socket通信逻辑
 /**
@@ -18,10 +21,10 @@ function sendCommandToCServer(command) {
     return new Promise((resolve, reject) => {
         
         const client = net.createConnection({ 
-            port: C_Server_Port, 
-            host: C_Server_Host 
+            port: config.C_Server_Port, 
+            host: config.C_Server_Host 
         }, () => {
-            console.log(`Web_Server successful connect: (${C_CORE_HOST}:${C_CORE_PORT})`);
+            console.log(`Web_Server successful connect: (${config.C_Server_Host}:${config.C_Server_Port})`);
             client.write(`${command}\n`); 
         });
 
@@ -109,7 +112,27 @@ app.get('/api/ping', async (req, res) => {
     }
 });
 
-app.listen(Web_Server_Port, () => {
-    console.log(`Web Server is running, port: ${Web_Server_Port}`);
-    console.log(`run at http://localhost:${Web_Server_Port}/api/ping`);
+app.listen(config.Web_Server_Port, async() => {
+    console.log(`Web Server is running, port: ${config.Web_Server_Port}`);
+
+    try {
+        const dbReady = await initializeDatabase();  // 初始化数据库
+        
+        if (dbReady) {
+            await loadDataToCServer(sendCommandToCServer);  // 将数据从 SQLite 加载到 C_Server 的内存中 ; 传入 sendCommandToCServer 函数给 loader 使用
+            console.log(`[Web_Server]  System initialization complete. All data loaded to C_Server.`);
+        } else {
+             throw new Error("Database initialization failed.");
+        }
+
+    } catch (e) {
+        console.error(`[Web_Server] Error: System startup failed.`, e.message);
+        process.exit(1);
+    }
+
+    console.log(`run at http://localhost:${config.Web_Server_Port}/api/ping`);
 });
+
+module.exports = {
+    sendCommandToCServer 
+};

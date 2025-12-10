@@ -136,4 +136,9 @@ int main() {
 }
 
 //server 启动
+
+// (失效-下方添加了cJson的编译)
 //gcc socket_server.c -o socket_server -mconsole -lws2_32 ;  if ($?) { .\socket_server }
+
+// 现用
+//gcc socket_server.c cJSON.c -o socket_server -mconsole -lws2_32 ;  if ($?) { .\socket_server }
