@@ -15,6 +15,7 @@ async function initializeDatabase() {
         console.log(`[SQLite] Database connected: ${config.DB_File}`);
 
         console.log("[SQLite] Trying to create 'songs' table..."); // 调试
+        //总表
         await db.exec(`
             CREATE TABLE IF NOT EXISTS songs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,6 +32,7 @@ async function initializeDatabase() {
         console.log("[SQLite] 'songs' table created/verified."); // 调试
         
         console.log("[SQLite] Trying to create 'playlists' table..."); // 调试
+        //  歌单表
         await db.exec(`
             CREATE TABLE IF NOT EXISTS playlists (
                 playlist_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,6 +43,7 @@ async function initializeDatabase() {
         console.log("[SQLite] 'playlists' table created/verified."); // 调试
 
         console.log("[SQLite] Trying to create 'playlist_songs' table..."); // 调试
+        //关联表 - 测试
         await db.exec(`
             CREATE TABLE IF NOT EXISTS playlist_songs (
                 playlist_id INTEGER,
@@ -59,7 +62,7 @@ async function initializeDatabase() {
             // 插入测试数据
             console.log("[SQLite] Inserting initial test data...");
             await db.run("INSERT INTO songs (title, artist, album, filepath, duration, cover_path) VALUES (?, ?, ?, ?, ?, ?)", 
-                '哈机米南北绿豆', '耄耋', '哈！', '/music/josh/feng.mp3', 280, '/covers/feng.jpg');
+                '哈机米南北绿豆', '耄耋', '哈！', '/music/josh/creazycat.mp3', 280, '/covers/creazycat.jpg');
             await db.run("INSERT INTO songs (title, artist, album, filepath, duration, cover_path) VALUES (?, ?, ?, ?, ?, ?)", 
                 '光辉岁月', 'Beyond', '光辉岁月', '/music/beyond/glory.mp3', 300, '/covers/glory.jpg');
 

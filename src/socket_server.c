@@ -71,27 +71,32 @@ void handle_client_request(SOCKET client_socket) {
 
         execute_command(buffer, response_buffer);
 
-        
-        const char* send_ptr = response_buffer; // 指向要发送的数据起始位置
-        int total_to_send = strlen(response_buffer); // 要发送的总字节数（JSON响应长度）
-        int total_sent = 0; // 已发送的字节数，初始为0
+        const char* send_ptr = response_buffer;  // 指向要发送的数据起始位置
+        int total_to_send = strlen(response_buffer);  // 要发送的总字节数（JSON响应长度）
+        int total_sent = 0;   // 已发送的字节数
         while (total_sent < total_to_send) {
-            // 每次发送"未发完的剩余数据"
-            int bytes_sent = send(client_socket, send_ptr + total_sent, total_to_send - total_sent, 0);
+            int bytes_sent = send(client_socket, send_ptr + total_sent, total_to_send - total_sent, 0);  // 每次发送"未发完的剩余数据"
             if (bytes_sent == SOCKET_ERROR) {
-                // 发送失败：打印Windows Socket错误码，方便定位问题（比如网络断开）
                 printf("Send failed with error: %d\n", WSAGetLastError());
-                break; // 发送失败，退出循环
+                break; 
             }
-            total_sent += bytes_sent; // 累加已发送字节数
+            total_sent += bytes_sent; 
+        }
+
+        if (total_sent == total_to_send) {
+            printf("Response sent: %d bytes.\n", total_sent);
+        } else {
+            printf("Only sent %d of %d bytes.\n", total_sent, total_to_send);
         }
         
     } else {
         printf("Client disconnected or error during recv: %d\n", WSAGetLastError());
     }
 
-    closesocket(client_socket); 
-    printf("Connection closed.\n"); 
+    if (closesocket(client_socket) == SOCKET_ERROR) {
+        printf("Failed to close socket. Error: %d\n", WSAGetLastError());
+    }
+    printf("Connection closed.\n");  
 }
 
 int main() {
