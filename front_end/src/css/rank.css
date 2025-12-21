@@ -19,7 +19,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* 排名数字样式 */
 .rank-number {
     width: 2rem;
     font-weight: 800;
@@ -32,11 +31,32 @@
 .rank-item:nth-child(2) .rank-number { color: #94a3b8; } /* 银 */
 .rank-item:nth-child(3) .rank-number { color: #b45309; } /* 铜 */
 
-/* 列表滚动条适配 */
 .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: var(--border-color);
     border-radius: 10px;
+}
+
+.rank-number {
+    font-family: 'Inter', 'system-ui', sans-serif;
+    letter-spacing: -1px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 0px;
+}
+
+.rank-item {
+    border: 1px solid transparent;
+}
+
+.rank-item:hover {
+    border-color: rgba(99, 102, 241, 0.2);
+    transform: translateX(4px); 
+}
+
+.light-mode .rank-item:hover {
+    background: rgba(99, 102, 241, 0.05) !important;
 }

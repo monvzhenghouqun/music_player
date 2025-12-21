@@ -1,9 +1,9 @@
-const API_BASE = "http://localhost:5000"; // Python 后端地址
+const BASE_URL = "http://localhost:5000"; // Python 后端地址
 
 const API = {
     // 模拟：获取首页推荐
     getRecommend: async () => {
-        // 真实代码: const res = await fetch(`${API_BASE}/recommend`); return await res.json();
+        // 真实代码: const res = await fetch(`${BASE_URL}/recommend`); return await res.json();
         
         // 模拟数据
         return [
@@ -51,17 +51,40 @@ const API = {
             }
         };
         return mockSongs[songId] || mockSongs["1"];
+    },
+
+    /**
+     * 获取歌单歌曲列表 (用于排行榜、普通歌单)
+     * @param {string|number} id 歌单ID
+     */
+
+    async getPlaylistSongs(id) {
+        try {
+            // 真实环境：const response = await fetch(`${this.BASE_URL}/playlist_songs/${id}`);
+            //const response = await fetch(`/playlist_songs/${id}`);
+            if (!response.ok) throw new Error('网络请求失败');
+            return await response.json();
+        } catch (error) {
+            console.warn("使用模拟排行榜数据...");
+            return this.getMockRankData(id);
+        }
+    },
+
+    // 测试使用
+    getMockRankData(id) {
+        return {
+            "id": id,
+            "count": 20,
+            "songs": Array.from({ length: 20 }, (_, i) => ({
+                "song_id": `mock_s_${i}`,
+                "title": `模拟歌曲 ${i + 1}`,
+                "artist": ["歌手A", "歌手B"],
+                "album": "测试专辑",
+                "duration": "04:20",
+                "url": `https://picsum.photos/200?random=${i}`, // 随机图片
+                "type": i < 10 ? "normal" : "loved",
+                "position": i + 1
+            }))
+        };
     }
 };
-
-// async function handlePlay(songId) {
-//     // 1. 从 API 获取数据（这就是你 api.js 里的 mockSongs 数据）
-//     const songData = await API.getSongDetail(songId);
-    
-//     if (songData) {
-//         // 2. 调用 Player 的播放入口
-//         // 这一步执行后，Player.js 里的 syncUI() 就会被触发
-//         // 从而把 songData 里的 title, artist, lyrics 等填充到 HTML 中
-//         Player.play(songData); 
-//     }
-// }
