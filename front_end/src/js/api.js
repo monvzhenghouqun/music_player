@@ -2,8 +2,8 @@ const BASE_URL = "http://localhost:5000"; // Python 后端地址
 
 window.API = {
 
-    // 测试用歌曲集合_  //用于日常推荐/排序/搜索
-    _List_SONGS: [
+    // 测试用歌曲集合_  //用于日常推荐
+    _List_SONGS_1: [
        {
             id: "101",
             song_id: "101",  //兼容字段 //测试
@@ -42,6 +42,91 @@ window.API = {
         },     
     ],
 
+    // 测试用歌曲集合_  //用于排序(全局)
+    _List_SONGS_2_l: [
+       {
+            id: "107",
+            song_id: "107",  //兼容字段 //测试
+            title: "1",
+            artist: ["wzm"],
+            album: "wzm",  //专辑
+            lyricist: "wzm",  //作词
+            composer: "wzm",  //作曲
+            language: "wzm",  //语言
+            genre: "",  //流派
+            record_company: "",  //唱片公司
+            duration: "3:43",  //时长
+            filepath: "./assets/music/daily/test1.mp3",   // 音乐地址
+            url: "./assets/cover/cover_song/test1.jpg",   // 封面图地址
+            lyrics: "第一句动次打次\n歌词第二句动词",  //歌词
+            is_deleted:"",  
+            created_at:""
+        },
+        {
+            id: "108",
+            song_id: "108", //兼容字段 //测试
+            title: "2",
+            artist: ["man"],
+            album: "man",  //专辑
+            lyricist: "",  //作词
+            composer: "",  //作曲
+            language: "",  //语言
+            genre: "",  //流派
+            record_company: "",  //唱片公司
+            duration: "3:38",  //时长
+            filepath: "./assets/music/daily/test2.mp3",   // 音乐地址
+            url: "./assets/cover/cover_song/test2.jpg",   // 封面图地址
+            lyrics: "第一句大词动词\n第二句大词",  //歌词
+            is_deleted:"",  
+            created_at:""
+        },     
+    ],
+
+    // 测试用歌曲集合_  //用于排序(用户)
+    _List_SONGS_2_r: [
+       {
+            id: "109",
+            song_id: "109",  //兼容字段 //测试
+            title: "1",
+            artist: ["man"],
+            album: "man",  //专辑
+            lyricist: "",  //作词
+            composer: "",  //作曲
+            language: "",  //语言
+            genre: "",  //流派
+            record_company: "",  //唱片公司
+            duration: "3:43",  //时长
+            filepath: "./assets/music/daily/test1.mp3",   // 音乐地址
+            url: "./assets/cover/cover_song/test1.jpg",   // 封面图地址
+            lyrics: "歌\n词",  //歌词
+            is_deleted:"",  
+            created_at:""
+        },
+        {
+            id: "110",
+            song_id: "110", //兼容字段 //测试
+            title: "2",
+            artist: ["man"],
+            album: "man",  //专辑
+            lyricist: "",  //作词
+            composer: "",  //作曲
+            language: "",  //语言
+            genre: "",  //流派
+            record_company: "",  //唱片公司
+            duration: "3:38",  //时长
+            filepath: "./assets/music/daily/test2.mp3",   // 音乐地址
+            url: "./assets/cover/cover_song/test2.jpg",   // 封面图地址
+            lyrics: "manba\nout",  //歌词
+            is_deleted:"",  
+            created_at:""
+        },     
+    ],
+
+
+    // 测试用歌曲集合_  //用于热门歌单推荐/标准歌单
+
+
+
     //热门推荐歌曲集合 对应接口 //recommendations/daily  //应该传回十首固定的歌曲集合
     getPopularSonglists:async () => {
         try {
@@ -53,7 +138,7 @@ window.API = {
 
         } catch (error) {
             console.warn("后端未响应，加载测试歌单...");
-            return this.API._List_SONGS;
+            return this.API._List_SONGS_1;
         }
     },
 
@@ -69,7 +154,7 @@ window.API = {
         } catch (error) {
             console.warn("后端未响应，加载测试歌单...");
             const mockResponse = {
-                id: id,
+                id: 1,
                 count: 4, 
                 //独立歌单集合
                 playlists: [
@@ -167,24 +252,24 @@ window.API = {
     //     }
     // },
 
-    // //  歌曲详情列表   
-    // getSongDetail: async (id) => {
-    //     try {
-    //         //后端对接
-    //         const res = await fetch(`${BASE_URL}/songslists/${id}`);
-    //         if (!res.ok) throw new Error();
-    //         return await res.json();
-    //     } catch (error) {
-    //         console.warn("后端未响应，加载预制歌曲详情...");
-    //         return {
-    //             songs: [
+    //  歌曲详情列表   
+    getSongDetail: async (id) => {
+        try {
+            //后端对接
+            const res = await fetch(`${BASE_URL}/songslists/${id}`);
+            if (!res.ok) throw new Error();
+            return await res.json();
+        } catch (error) {
+            console.warn("后端未响应，加载预制歌曲详情...");
+            return {
+                songs: [
                     
-    //             ]
+                ]
                 
 
-    //         };
-    //     }
-    // },   
+            };
+        }
+    },   
 };
 
 window.Player = Player; // 关键：手动挂载到全局

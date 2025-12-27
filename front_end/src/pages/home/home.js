@@ -114,20 +114,27 @@ const home_page = {
 
         this.handleBannerClick();
 
-        const container = document.getElementById('home-list');
-        // const template = document.getElementById('song-card-template');
+        console.log("[Home] 正在初始化首页歌单...");
 
-        // 1. 核心：只绑定 Banner 的立即播放事件
+        const container = document.getElementById('home-list');
+        const template = document.getElementById('song-card-template');
+
+        // 核心：绑定 Banner 立即播放事件
         this.handleBannerClick();
 
-        if (!container) return;
+        if (!container || !template) {
+            console.warn("[Home] 未找到歌单容器板");
+            return;
+        }
 
-        // // 2. 清空下方列表 (既然你还没定义歌单数据，我们就不要强行渲染歌曲)
-        // container.innerHTML = `
-        //     <div class="col-span-full py-10 text-center text-slate-500 border-2 border-dashed border-slate-800 rounded-2xl">
-        //         <p>暂无歌单数据，请点击上方“立即播放”测试链表内核</p>
-        //     </div>
-        // `;
+        try {
+            // 获取热门歌单数据
+            const playlists = await window.API.getPopularPlaylists();    // getPopularPlaylists
+            this.render(container, template, playlists);
+        } catch (error) {
+            console.error("[Home] 渲染歌单失败:", error);
+        }
+
     },
 
     handleBannerClick() {
@@ -165,7 +172,53 @@ const home_page = {
                 console.error("链表注入失败:", err);
             }
         };
-    }
+    },
+
+    render(container, template, data) {
+        // 渲染前清空容器（除了模板本身）
+        container.innerHTML = '';
+
+        data.forEach(item => {
+            const clone = template.content.cloneNode(true);
+
+            // 绑定数据 - 对应你 API 里的字段
+            const img = clone.querySelector('.pl-cover');    //封面图
+            const title = clone.querySelector('.pl-title');   //歌单标题
+
+            // const playCount = clone.querySelector('.fa-play')?.parentElement;
+
+            // 测试 ？
+            const playCountSpan = clone.querySelector('.absolute.bottom-3.left-3 span');
+            if (playCountSpan) {
+                // 将 API 里的 play_count 填进去，覆盖掉 HTML 模板里的死数字 10
+                playCountSpan.innerHTML = `<i class="fa-solid fa-play text-[10px] mr-1"></i>${item.play_count}`;
+            }
+
+            if (img) img.src = item.url;
+            if (title) title.innerText = item.title;
+
+            // // 格式化播放量显示
+            // if (playCount) {
+            //     const count = item.play_count >= 10000 
+            //         ? (item.play_count / 10000).toFixed(1) + '万' 
+            //         : item.play_count;
+            //     playCount.innerHTML = `<i class="fa-solid fa-play text-[10px] mr-1"></i>${count}`;
+            // }
+
+            // 给歌单卡片添加点击事件 (后续可扩展进入歌单详情)
+            const card = clone.querySelector('.group');
+            if (card) {
+                card.onclick = () => {
+                    console.log(`[Home] 点击了歌单: ${item.title} (ID: ${item.song_id})`);
+                    loadPage('playlist', { id: item.song_id });
+                };
+            }
+
+            container.appendChild(clone);
+        });
+        console.log(`[Home] 成功渲染 ${data.length} 个歌单`);
+    },
+
 };
 
 window.PageHandlers = window.PageHandlers || {};
