@@ -15,7 +15,7 @@ window.API = {
             language: "",  //语言
             genre: "",  //流派
             record_company: "",  //唱片公司
-            duration: "",  //时长
+            duration: "3:43",  //时长
             filepath: "./assets/music/daily/test1.mp3",   // 音乐地址
             url: "./assets/cover/cover_song/test1.jpg",   // 封面图地址
             lyrics: "歌词第一句\n歌词第二句",  //歌词
@@ -33,7 +33,7 @@ window.API = {
             language: "",  //语言
             genre: "",  //流派
             record_company: "",  //唱片公司
-            duration: "",  //时长
+            duration: "3:38",  //时长
             filepath: "./assets/music/daily/test2.mp3",   // 音乐地址
             url: "./assets/cover/cover_song/test2.jpg",   // 封面图地址
             lyrics: "第一句\n第二句",  //歌词
@@ -41,61 +41,6 @@ window.API = {
             created_at:""
         },     
     ],
-
-    // 测试用歌单详情歌曲集合_   //用于热门/标准歌单内详情歌曲对接
-    // _Play_List_SONGS: [
-    //     {
-    //         id: id,
-    //         title: "man",
-    //         artist: ["man"],
-    //         album: "man",
-    //         lyricist: "",
-    //         composer: "",
-    //         language: "",
-    //         genre: "",
-    //         record_company: "",
-    //         duration: "",
-    //         filepath: "./assets/music/test1.mp3",   // 音乐地址
-    //         url: "./assets/cover/test1.jpg",   // 封面图地址
-    //         lyrics: "预制歌词第一句\n预制歌词第二句",
-    //         is_deleted:"",  // 软删除
-    //         created_at:""
-    //     },
-    //     {
-    //         id: id,
-    //         title: "man",
-    //         artist: ["man"],
-    //         album: "man",
-    //         lyricist: "",
-    //         composer: "",
-    //         language: "",
-    //         genre: "",
-    //         record_company: "",
-    //         duration: "",
-    //         filepath: "./assets/music/test1.mp3",   // 音乐地址
-    //         url: "./assets/cover/test1.jpg",   // 封面图地址
-    //         lyrics: "预制歌词第一句\n预制歌词第二句",
-    //         is_deleted:"",  // 软删除
-    //         created_at:""
-    //     },
-    //     {
-    //         id: id,
-    //         title: "man",
-    //         artist: ["man"],
-    //         album: "man",
-    //         lyricist: "",
-    //         composer: "",
-    //         language: "",
-    //         genre: "",
-    //         record_company: "",
-    //         duration: "",
-    //         filepath: "./assets/music/test1.mp3",   // 音乐地址
-    //         url: "./assets/cover/test1.jpg",   // 封面图地址
-    //         lyrics: "预制歌词第一句\n预制歌词第二句",
-    //         is_deleted:"",  // 软删除
-    //         created_at:""
-    //     },  
-    // ],
 
     //热门推荐歌曲集合 对应接口 //recommendations/daily  //应该传回十首固定的歌曲集合
     getPopularSonglists:async () => {
@@ -112,67 +57,67 @@ window.API = {
         }
     },
 
-    // //热门推荐歌单 对应接口 //recommendations/popular  // 应该传回四个独立的热门歌单  //每个歌单会和独立唯一的歌曲列表对应
-    // getPopularPlaylists: async () => {
-    //     try {
-    //         //后端对接
-    //         const res = await fetch(`${BASE_URL}/recommendations/popular`);
-    //         if (!res.ok) throw new Error();
-    //         const data = await res.json();
-    //         return data.playlists;
+    //热门推荐歌单 对应接口 //recommendations/popular  // 应该传回四个独立的热门歌单  //每个歌单会和独立唯一的歌曲列表对应
+    getPopularPlaylists: async () => {
+        try {
+            //后端对接
+            const res = await fetch(`${BASE_URL}/recommendations/popular`);
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            return data.playlists;
 
-    //     } catch (error) {
-    //         console.warn("后端未响应，加载测试歌单...");
-    //         const mockResponse = {
-    //             id: id,
-    //             count: 4, 
-    //             //独立歌单集合
-    //             playlists: [
-    //                 { 
-    //                     song_id: 101, 
-    //                     title: "大手子致敬", 
-    //                     creater_id: 101,
-    //                     type: "a",
-    //                     url: "./assets/cover/test1.jpg",
-    //                     collect_count: 10,
-    //                     play_count: 10,
-    //                     song_count: 1
-    //                 },
-    //                 { 
-    //                     song_id: 101, 
-    //                     title: "致敬大手子", 
-    //                     creater_id: 102,
-    //                     type: "a",
-    //                     url: "./assets/cover/test1.jpg",
-    //                     collect_count: 10,
-    //                     play_count: 10,
-    //                     song_count: 1
-    //                 },
-    //                 { 
-    //                     song_id: 101, 
-    //                     title: "大手致敬子", 
-    //                     creater_id: 103,
-    //                     type: "a",
-    //                     url: "./assets/cover/test1.jpg",
-    //                     collect_count: 10,
-    //                     play_count: 10,
-    //                     song_count: 1
-    //                 },
-    //                 { 
-    //                     song_id: 101, 
-    //                     title: "大子致敬手", 
-    //                     creater_id: 104,
-    //                     type: "a",
-    //                     url: "./assets/cover/test1.jpg",
-    //                     collect_count: 10,
-    //                     play_count: 10,
-    //                     song_count: 1
-    //                 }
-    //             ]
-    //         };
-    //         return mockResponse.playlists;
-    //     }
-    // },
+        } catch (error) {
+            console.warn("后端未响应，加载测试歌单...");
+            const mockResponse = {
+                id: id,
+                count: 4, 
+                //独立歌单集合
+                playlists: [
+                    { 
+                        song_id: 103, 
+                        title: "大手子致敬", 
+                        creater_id: 10,
+                        type: "a",
+                        url: "./assets/cover/cover_playlist/test1.jpg",
+                        collect_count: 10,
+                        play_count: 10,
+                        song_count: 1
+                    },
+                    { 
+                        song_id: 104, 
+                        title: "致敬大手子", 
+                        creater_id: 10,
+                        type: "a",
+                        url: "./assets/cover/cover_playlist/test2.jpg",
+                        collect_count: 10,
+                        play_count: 10,
+                        song_count: 1
+                    },
+                    { 
+                        song_id: 105, 
+                        title: "大手致敬子", 
+                        creater_id: 10,
+                        type: "a",
+                        url: "./assets/cover/cover_playlist/test3.jpg",
+                        collect_count: 10,
+                        play_count: 10,
+                        song_count: 1
+                    },
+                    { 
+                        song_id: 106, 
+                        title: "大子致敬手", 
+                        creater_id: 10,
+                        type: "a",
+                        url: "./assets/cover/cover_playlist/test4.jpg",
+                        collect_count: 10,
+                        play_count: 10,
+                        song_count: 1
+                    }
+                ]
+            };
+            return mockResponse.playlists;
+        }
+    },
 
     // //标准歌单   //每个歌单会和独立唯一的歌曲列表对应
     // getPlaylistSongs: async (id) => {

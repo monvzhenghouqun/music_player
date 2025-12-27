@@ -22,6 +22,11 @@ const Player = {
             this.audio.ontimeupdate = () => this.handleTimeUpdate();
             this.audio.onended = () => this.next(true);
 
+            this.audio.onloadedmetadata = () => {
+                console.log("[Player] 总时长:", this.audio.duration);
+                this.updateDurationUI();
+            };
+
             // 进度条初始化
             this.setupProgressBar('p-progress-container'); // 底部
             this.setupProgressBar('fp-progress-container'); // 全屏
@@ -146,24 +151,25 @@ const Player = {
     },
 
     async loadAndPlayCurrent() {
-        if (!this.playlist.current) return;
+        if (!this.playlist || !this.playlist.current) return;
         const song = this.playlist.current.data;
 
-        this.audio.src = song.filepath; 
+        await this.loadSong(song);
+        // this.audio.src = song.filepath; 
         
-        try {
-            await this.audio.play();
-            this.isPlaying = true;
-            this.updateUI(song);
-            this.updatePlayBtnState(true);
+        // try {
+        //     await this.audio.play();
+        //     this.isPlaying = true;
+        //     this.updateUI(song);
+        //     this.updatePlayBtnState(true);
             
-            // 每次切歌，都要更新队列的高亮状态
-            // 这样你打开列表时，就能看到当前播放的是哪首
-            this.renderQueue(); 
+        //     // 每次切歌，都要更新队列的高亮状态
+        //     // 这样你打开列表时，就能看到当前播放的是哪首
+        //     this.renderQueue(); 
 
-        } catch (err) {
-            console.error("播放失败:", err);
-        }
+        // } catch (err) {
+        //     console.error("播放失败:", err);
+        // }
     },
     
     toggleQueue() {
@@ -191,6 +197,16 @@ const Player = {
             if (!audioSrc) throw new Error(`歌曲《${song.title}》缺少音频路径`);
 
             this.audio.src = audioSrc;
+            this.audio.load(); 
+            this.currentSong = song;
+
+            try {
+                this.audio.play();
+                this.isPlaying = true;
+            } catch (e) {
+                console.warn("[Player] 自动播放受限:", e.name);
+                this.isPlaying = false;
+            }
             
             // 处理浏览器自动播放策略
             const playPromise = this.audio.play();
@@ -207,9 +223,10 @@ const Player = {
 
             // 同步所有 UI 组件
             this.syncUI(song);
+            this.renderQueue();   // 测试
             
         } catch (e) {
-            console.error("❌ [Player.loadSong] 出错:", e.message);
+            console.error(" [Player.loadSong] 出错:", e.message);
         }
     },
 
@@ -508,7 +525,7 @@ const Player = {
         this.updateVolumeIcon(volume);
     },
 
-    //待测试 一键静音/智能音准
+    //待测试 一键静音/智能音量
     toggleMute() {
         if (this.audio.volume > 0) {
             this.lastVolume = this.audio.volume; // 保存当前音量
@@ -560,6 +577,19 @@ const Player = {
             }
         });
 
+    },
+
+    // 时长
+    updateDurationUI() {
+        const durationStr = this.formatTime(this.audio.duration);
+        
+        // 底部栏总时长 ID: p-total-time
+        const pTotal = document.getElementById('p-total-time');
+        // 全屏模式总时长 ID: fp-duration
+        const fpTotal = document.getElementById('fp-duration');
+
+        if (pTotal) pTotal.innerText = durationStr;
+        if (fpTotal) fpTotal.innerText = durationStr;
     },
 
     handleTimeUpdate() {
