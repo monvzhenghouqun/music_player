@@ -58,3 +58,6 @@ public/build/
 
 # Git Desktop 自己生成的垃圾
 .gitignore   
+front_end/assets/music/3.mp3
+front_end/assets/music/1.mp3
+front_end/assets/music/2.mp3
