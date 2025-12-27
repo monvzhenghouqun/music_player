@@ -14,6 +14,7 @@ const Player = {
     currentSong: null,
     isFullPlayerOpen: false,
     isQueueOpen: false, // 侧边栏状态
+    lastVolume: 1,  // 音量状态
 
     init() {
         try {
@@ -28,6 +29,12 @@ const Player = {
             // 点击底部封面展开全屏
             const miniCover = document.getElementById('p-cover');
             if (miniCover) miniCover.onclick = () => this.toggleFullPlayer();
+
+            this.initVolumeControl();   // 音量 初始化
+            this.setVolume(this.audio.volume || 0.8);   // 音量 同步
+
+            // this.syncVolumeUI(this.audio.volume);
+    
 
             // 测试
             // 特殊——初始化
@@ -399,11 +406,24 @@ const Player = {
 
             if (btn.classList.contains('btn-next')) this.next();
             if (btn.classList.contains('btn-prev')) this.prev();
+            if (btn.classList.contains('btn-toggle')) this.toggle(); // 对应 p-btn-icon 和 fp-play-icon
             if (btn.classList.contains('btn-mode')) this.toggleMode();
             if (btn.classList.contains('btn-like')) this.toggleLike();
             if (btn.classList.contains('btn-toggle')) this.toggle();
         });
     },
+
+    toggle() {
+        if (!this.audio.src) return;
+        if (this.audio.paused) {
+            this.audio.play();
+            this.isPlaying = true;
+        } else {
+            this.audio.pause();
+            this.isPlaying = false;
+        }
+        this.updatePlayStateUI();
+    },   
 
     // --- 进度条逻辑 ---
     setupProgressBar(id) {
@@ -415,6 +435,131 @@ const Player = {
             const pct = (e.clientX - rect.left) / rect.width;
             this.audio.currentTime = pct * this.audio.duration;
         };
+    },
+
+    // initVolumeControl() {
+    //     const volContainer = document.getElementById('volume-container');
+    //     const volProgress = document.getElementById('volume-progress');
+
+    //     if (!volContainer || !volProgress) {
+    //         console.warn("[Player] 找不到音量控制组件，跳过绑定");
+    //         return;
+    //     }
+
+    //     // 设置初始音量 UI (跟随 audio 默认音量)
+    //     volProgress.style.width = `${this.audio.volume * 100}%`;
+
+    //     volContainer.onclick = (e) => {
+    //         // 计算点击位置占总宽度的比例
+    //         const rect = volContainer.getBoundingClientRect();
+    //         const offsetX = e.clientX - rect.left;
+    //         const width = rect.width;
+    //         let pct = offsetX / width;
+
+    //         // 边界处理：防止超出 0-1 范围
+    //         pct = Math.max(0, Math.min(1, pct));
+
+    //         // 核心：修改音频对象音量
+    //         this.audio.volume = pct;
+
+    //         // 更新 UI
+    //         volProgress.style.width = `${pct * 100}%`;
+            
+    //         console.log(`[Player] 音量调整为: ${Math.round(pct * 100)}%`);
+    //     };
+    // },
+
+    initVolumeControl() {
+        const configs = [
+            { container: 'volume-container', bar: 'volume-progress' },
+            { container: 'fp-volume-container', bar: 'fp-volume-progress' }
+        ];
+
+        configs.forEach(cfg => {
+            const container = document.getElementById(cfg.container);
+            const bar = document.getElementById(cfg.bar);
+            if (!container || !bar) return;
+
+            container.onclick = (e) => {
+                const rect = container.getBoundingClientRect();
+                const pct = (e.clientX - rect.left) / rect.width;
+                this.setVolume(pct);
+            };
+        });
+
+        // // 初始 UI 同步
+        // this.setVolume(this.audio.volume);
+    },
+
+    setVolume(val) {
+        const volume = Math.max(0, Math.min(1, val));
+        this.audio.volume = volume;
+        
+        // 如果音量不为0，记录为最后有效音量
+        if (volume > 0) this.lastVolume = volume;
+
+        // 同步两个进度条宽度
+        const bars = ['volume-progress', 'fp-volume-progress'];
+        bars.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.width = `${volume * 100}%`;
+        });
+
+        this.updateVolumeIcon(volume);
+    },
+
+    //待测试 一键静音/智能音准
+    toggleMute() {
+        if (this.audio.volume > 0) {
+            this.lastVolume = this.audio.volume; // 保存当前音量
+            this.setVolume(0);
+        } else {
+            this.setVolume(this.lastVolume || 0.8); // 恢复音量，默认0.8
+        }
+    },
+
+    updateVolumeIcon(volume) {
+        const icons = ['p-volume-icon', 'fp-volume-icon'];
+        // let iconClass = 'fa-volume-xmark'; // 默认静音
+        let iconClass = 'fa-volume-low';
+
+        // if (volume > 0.5) {
+        //     iconClass = 'fa-volume-high';
+        // } else if (volume > 0) {
+        //     iconClass = 'fa-volume-low';
+        // }
+
+        if (volume === 0) {
+            iconClass = 'fa-volume-xmark';
+        } else if (volume > 0.6) {
+            iconClass = 'fa-volume-high';
+        }
+
+        // icons.forEach(id => {
+        //     const el = document.getElementById(id);
+        //     if (el) {
+        //         // 替换掉旧的图标类
+        //         el.classList.remove('fa-volume-high', 'fa-volume-low', 'fa-volume-xmark');
+        //         el.classList.add(iconClass);
+        //     }
+        // });
+
+        icons.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                // 必须保留 fa-solid，只替换变化的那个类
+                el.className = `fa-solid ${iconClass} transition-all`;
+                // 根据音量调整颜色反馈
+                if (volume === 0) {
+                    el.classList.add('text-red-500');
+                    el.classList.remove('text-slate-500');
+                } else {
+                    el.classList.remove('text-red-500');
+                    el.classList.add('text-slate-500');
+                }
+            }
+        });
+
     },
 
     handleTimeUpdate() {

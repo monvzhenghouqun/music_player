@@ -146,7 +146,7 @@ const home_page = {
                     console.log(`[Kernel] 成功提取数据，正在构建双向循环链表...`);
                     
                     if (!window.Player) {
-                        console.error("❌ 致命错误：Player 对象未定义！请检查 player.js 是否成功挂载到 window");
+                        console.error(" 致命错误：Player 对象未定义！请检查 player.js 是否成功挂载到 window");
                         return;
                     }
 

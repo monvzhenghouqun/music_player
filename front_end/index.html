@@ -111,15 +111,33 @@
             </div>
 
             <div class="flex items-center justify-end gap-10 w-1/4">
-                <div class="flex items-center gap-3 group">
+                <!-- <div class="flex items-center gap-3 group">
                     <i class="fa-solid fa-volume-low text-[10px] text-slate-500 group-hover:text-white"></i>
                     <div class="w-20 h-0.5 bg-white/10 rounded-full cursor-pointer relative overflow-hidden">
                         <div class="absolute h-full bg-indigo-500 w-2/3"></div>
                     </div>
-                </div>
+                </div> -->
                 <!-- <button class="text-slate-500 hover:text-white transition-all">
                     <i class="fa-solid fa-list-ul text-xs"></i>
                 </button> -->
+                <!-- <div class="flex items-center gap-3 group">
+                    <button onclick="Player.toggleMute()" class="flex items-center justify-center">
+                        <i id="p-volume-icon" class="fa-solid fa-volume-low text-slate-500 text-lg group-hover:text-indigo-500 transition-all"></i>
+                    </button>
+                    <div id="volume-container" class="w-24 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer relative overflow-hidden">
+                        <div id="volume-progress" class="absolute h-full bg-slate-400 w-2/3 group-hover:bg-indigo-400 transition-colors"></div>
+                    </div>
+                </div> -->
+
+                <div class="flex items-center gap-3 group">
+                    <button onclick="Player.toggleMute()" class="flex items-center justify-center p-1">
+                        <i id="p-volume-icon" class="fa-solid fa-volume-low text-slate-500 text-xl group-hover:text-indigo-500 transition-all"></i>
+                    </button>
+                    <div id="fp-volume-container" class="w-24 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer relative overflow-hidden">
+                        <div id="fp-volume-progress" class="absolute h-full bg-slate-400 w-2/3 group-hover:bg-indigo-400 transition-colors"></div>
+                    </div>
+                </div>
+
                 <button onclick="Player.toggleQueue()" class="text-slate-500 hover:text-white transition">
                     <i class="fa-solid fa-list-ul"></i>
                 </button>
@@ -234,21 +252,31 @@
         </div>
     </div>
 
+    <!-- 1 -->
     <div class="flex items-center justify-end gap-5 w-1/3">
-        <div class="flex items-center gap-3 group">
+        <!-- <div class="flex items-center gap-3 group">
             <i class="fa-solid fa-volume-low text-slate-500"></i>
-            <div class="w-24 h-1 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer relative overflow-hidden">
-                <div class="absolute h-full bg-slate-400 w-2/3 group-hover:bg-indigo-400 transition-colors"></div>
+            <div id="volume-container" class="w-24 h-1 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer relative overflow-hidden">
+                <div id="volume-progress" class="absolute h-full bg-slate-400 w-2/3 group-hover:bg-indigo-400 transition-colors"></div>
+            </div>
+        </div> -->
+        <!-- <button class="text-slate-500 hover:text-indigo-500 transition text-sm"><i class="fa-solid fa-list-ul"></i></button> -->
+        <!-- <button onclick="Player.toggleQueue()" class="text-slate-500 hover:text-indigo-500 transition text-sm">
+            <i class="fa-solid fa-list-ul"></i>
+        </button> -->
+        <div class="flex items-center gap-3 group">
+            <button onclick="Player.toggleMute()" class="flex items-center justify-center">
+                <i id="fp-volume-icon" class="fa-solid fa-volume-low text-slate-500 text-lg group-hover:text-indigo-500 transition-all"></i>
+            </button>
+            <div id="volume-container" class="w-24 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer relative overflow-hidden">
+                <div id="volume-progress" class="absolute h-full bg-slate-400 w-2/3 group-hover:bg-indigo-400 transition-colors"></div>
             </div>
         </div>
-        <!-- <button class="text-slate-500 hover:text-indigo-500 transition text-sm"><i class="fa-solid fa-list-ul"></i></button> -->
         <button onclick="Player.toggleQueue()" class="text-slate-500 hover:text-indigo-500 transition text-sm">
             <i class="fa-solid fa-list-ul"></i>
         </button>
     </div>
     </div>
-
-    
 
     <div id="user-settings-modal" class="fixed inset-0 z-[110] hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleSettings()"></div>
