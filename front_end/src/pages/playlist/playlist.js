@@ -68,44 +68,165 @@
 //     window.PageHandlers.playlist = (params) => PlaylistView.init(params);
 // })();
 
+
+
+
+
+
+
+
+
+
+
+
+
+// (function() {
+//     const PlaylistView = {
+
+//         currentPlaylistSongs: [],
+
+//         async init(params) {
+//             console.log("[Playlist] 初始化, 参数:", params); // 调试用
+            
+//             const container = document.getElementById('song-list-body');
+//             const template = document.getElementById('song-row-template');
+            
+//             if (!container || !template) return;
+
+//             // 显示加载状态
+//             // container.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500">加载中...</td></tr>';
+
+//             try {
+//                 // 获取数据
+//                 // { id, title, songs: [...] }
+
+//                 // const playlistId = params ? params.id : 1;
+//                 // const data = await API.getPlaylistSongs(playlistId); 
+
+//                 const data = await API.getPlaylistSongs(params.id || "103");
+//                 console.log("[Playlist] 获取到数据:", data); // 调试用
+
+//                 // // 更新头部信息
+//                 // const titleEl = document.getElementById('pl-title');
+//                 // // 优先使用数据里的 title，如果没有则显示默认
+//                 // if (titleEl) titleEl.textContent = data.title || "未知歌单"; 
+                
+//                 // const descEl = document.getElementById('pl-desc');
+//                 // if (descEl) descEl.textContent = `${data.songs ? data.songs.length : 0} 首歌曲`;
+
+//                 // // 渲染列表
+//                 // if (data.songs && data.songs.length > 0) {
+//                 //     this.render(container, template, data.songs);
+//                 // } else {
+//                 //     container.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500">歌单为空</td></tr>';
+//                 // }
+
+//                 this.currentPlaylistSongs = data.songs; 
+
+//                 document.getElementById('pl-title').textContent = data.title;
+//                 this.render(container, template, data.songs);
+                
+//             } catch (err) {
+//                 console.error("加载失败:", err);
+//                 container.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-red-400">数据加载失败</td></tr>';
+//             }
+//         },
+
+//         render(container, template, songs) {
+//             container.innerHTML = '';
+//             const fragment = document.createDocumentFragment();
+
+//             songs.forEach((song, index) => {
+//                 const clone = template.content.cloneNode(true);
+                
+//                 // 1. 填充基本信息
+//                 clone.querySelector('.index-num').textContent = index + 1;
+//                 clone.querySelector('.song-name').textContent = song.title;
+                
+//                 const artistName = Array.isArray(song.artist) ? song.artist.join(' / ') : (song.artist || "未知");
+//                 clone.querySelector('.song-artist').textContent = artistName;
+
+//                 // 2. 绑定点击事件 (核心修复：点击播放当前歌曲，并传入整个列表)
+//                 const row = clone.querySelector('.song-row');
+
+//                 row.onclick = async () => {
+//                     console.log(`[Playlist] 用户点击歌曲: ${song.title}`);
+
+//                     if (window.Player) {
+//                         Player.play(song, this.currentPlaylistSongs);
+//                     }
+                    
+//                     // try {
+                        
+//                     //     // let songToPlay = song;
+                        
+//                     //     // if (!song.filepath) {
+//                     //     //      // 如果列表数据太简单，没有播放地址，才去请求详情
+//                     //     //      songToPlay = await API.getSongDetail(song.song_id || song.id);
+//                     //     // }
+
+//                     //     // 1. 调用新接口，拿到包含 songs 数组的集合对象
+//                     //     const response = await API.getSongDetail(currentId);
+                        
+//                     //     // 2. 验证数据：确保 response.songs 存在
+//                     //     if (response && response.songs && Array.isArray(response.songs)) {
+//                     //         const fullList = response.songs; // 这是后端给你的最新完整列表
+                            
+//                     //         // 3. 在这个集合中找到用户点的那首歌作为“启动锚点”
+//                     //         const targetSong = fullList.find(s => (s.id == currentId || s.song_id == currentId)) || fullList[0]; // 找不到就播第一首
+
+//                     //     if (window.Player) {
+//                     //             // 4. 传给播放器。Player 会在内部构建双向循环链表
+//                     //             // 参数1：要播的歌；参数2：整个集合数组
+//                     //             Player.play(targetSong, fullList);
+//                     //     }
+//                     //}
+
+//                 } 
+//                 fragment.appendChild(clone);
+//             });
+
+//             container.appendChild(fragment);
+//         }
+//     };
+
+//     // 确保 PageHandlers 存在
+//     window.PageHandlers = window.PageHandlers || {};
+//     window.PageHandlers.playlist = (params) => PlaylistView.init(params);
+// })();
+
+
 (function() {
     const PlaylistView = {
+        // 定义一个内部变量，专门存【当前打开的这个歌单】的歌曲
+        _localCurrentSongs: [], 
+
         async init(params) {
-            console.log("[Playlist] 初始化, 参数:", params); // 调试用
-            
             const container = document.getElementById('song-list-body');
             const template = document.getElementById('song-row-template');
-            
             if (!container || !template) return;
 
-            // 显示加载状态
-            container.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500">加载中...</td></tr>';
+            // 1. 等待 API 准备就绪
+            if (!window.API || !window.API.getPlaylistSongs) {
+                setTimeout(() => this.init(params), 50);
+                return;
+            }
 
             try {
-                const playlistId = params ? params.id : 1;
-                
-                // 获取数据
+                // 2. 获取歌单数据 (例如 ID 为 103)
+                const playlistId = params.id || "103";
                 const data = await API.getPlaylistSongs(playlistId); 
-                console.log("[Playlist] 获取到数据:", data); // 调试用
-
-                // 更新头部信息
-                const titleEl = document.getElementById('pl-title');
-                // 优先使用数据里的 title，如果没有则显示默认
-                if (titleEl) titleEl.textContent = data.title || "未知歌单"; 
                 
-                const descEl = document.getElementById('pl-desc');
-                if (descEl) descEl.textContent = `${data.songs ? data.songs.length : 0} 首歌曲`;
+                // 3. 【关键】把这一批歌存到局部变量里，不影响首页推荐
+                this._localCurrentSongs = data.songs || [];
 
-                // 渲染列表
-                if (data.songs && data.songs.length > 0) {
-                    this.render(container, template, data.songs);
-                } else {
-                    container.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-500">歌单为空</td></tr>';
-                }
+                // 4. 更新 UI
+                document.getElementById('pl-title').textContent = data.title || "歌单详情";
                 
+                // 5. 调用渲染
+                this.render(container, template, this._localCurrentSongs);
             } catch (err) {
-                console.error("歌单初始化失败:", err);
-                container.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-red-400">数据加载失败</td></tr>';
+                console.error("[Playlist] 加载失败:", err);
             }
         },
 
@@ -116,56 +237,29 @@
             songs.forEach((song, index) => {
                 const clone = template.content.cloneNode(true);
                 
-                // 1. 填充基本信息
+                // 填充数据
                 clone.querySelector('.index-num').textContent = index + 1;
                 clone.querySelector('.song-name').textContent = song.title;
-                
-                const artistName = Array.isArray(song.artist) ? song.artist.join(' / ') : (song.artist || "未知");
-                clone.querySelector('.song-artist').textContent = artistName;
+                clone.querySelector('.song-artist').textContent = Array.isArray(song.artist) ? song.artist.join('/') : song.artist;
 
-                // 2. 绑定点击事件 (核心修复：点击播放当前歌曲，并传入整个列表)
                 const row = clone.querySelector('.song-row');
-                row.onclick = async () => {
-                    console.log(`[点击] 播放: ${song.title}, ID: ${song.song_id || song.id}`);
-                    
-                    try {
-                        
-                        // let songToPlay = song;
-                        
-                        // if (!song.filepath) {
-                        //      // 如果列表数据太简单，没有播放地址，才去请求详情
-                        //      songToPlay = await API.getSongDetail(song.song_id || song.id);
-                        // }
-
-                        // 1. 调用新接口，拿到包含 songs 数组的集合对象
-                        const response = await API.getSongDetail(currentId);
-                        
-                        // 2. 验证数据：确保 response.songs 存在
-                        if (response && response.songs && Array.isArray(response.songs)) {
-                            const fullList = response.songs; // 这是后端给你的最新完整列表
-                            
-                            // 3. 在这个集合中找到用户点的那首歌作为“启动锚点”
-                            const targetSong = fullList.find(s => (s.id == currentId || s.song_id == currentId)) || fullList[0]; // 找不到就播第一首
-
-                        if (window.Player) {
-                                // 4. 传给播放器。Player 会在内部构建双向循环链表
-                                // 参数1：要播的歌；参数2：整个集合数组
-                                Player.play(targetSong, fullList);
-                        }
-                }
-                    } catch (err) {
-                        console.error("播放请求失败:", err);
+                
+                // --- 这里是点击逻辑，它只使用 this._localCurrentSongs ---
+                row.onclick = () => {
+                    console.log(`[Playlist] 播放当前歌单中的: ${song.title}`);
+                    if (window.Player) {
+                        // 传入当前点击的歌，以及【本歌单】的完整列表
+                        // 这样播放器就会载入这个歌单，而不会影响首页点击“立即播放”载入的列表
+                        Player.play(song, this._localCurrentSongs);
                     }
                 };
 
                 fragment.appendChild(clone);
             });
-
             container.appendChild(fragment);
         }
     };
 
-    // 确保 PageHandlers 存在
     window.PageHandlers = window.PageHandlers || {};
     window.PageHandlers.playlist = (params) => PlaylistView.init(params);
 })();

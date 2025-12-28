@@ -112,6 +112,11 @@
 const home_page = {
     async init(_params) {
 
+        if (!window.API || !window.API.getPopularPlaylists) {
+            setTimeout(() => this.init(_params), 50);
+            return;
+        }   
+
         this.handleBannerClick();
 
         console.log("[Home] 正在初始化首页歌单...");
@@ -144,6 +149,11 @@ const home_page = {
         playBtn.onclick = null;
         playBtn.onclick = async () => {
             console.log("[Home] 点击了 Banner，准备加载 10 首测试歌曲到链表...");
+
+            if (!window.API) {
+                console.error("API 尚未加载完成，请稍候...");
+            return;
+    }
             
             try {
                 // 直接从 API 获取那 10 首存放在 _List_SONGS 里的歌曲
