@@ -86,16 +86,21 @@ window.API = {
 
 
 
-    
 
-    //  歌曲详情列表   //兼容 热门歌单和标准歌单  对应接口 //songlist/${id}  // 根据歌曲id返回对应歌曲详情
-    getPlaylistSongs : async (id) => {
 
-        console.log(`[API] 正在请求歌单详情，ID: ${id}`);
+    //  歌曲详情列表   //兼容 热门歌单和标准歌单  对应接口 //songlist/  // 根据歌曲id返回对应歌曲详情
+    //  注意:  传入了user_id,用于检测用户是否喜欢，待实现逻辑
+
+    //  const userId = localStorage.getItem('user_id') || '123'; // 示例获取方式
+    //  API.getPlaylistSongs(9, userId);
+
+    getPlaylistSongs : async (id, user_id) => {
+
+        console.log(`[API] 正在请求歌单详情，ID: ${id}, 用户ID: ${user_id}`);
         try {
             //后端对接
-            const res = await fetch(`${BASE_URL}/songslists/${id}`);
-            if (!res.ok) throw new Error();
+            const res = await fetch(`${BASE_URL}/songslists/${id}?user_id=${user_id}`);
+            if (!res.ok) throw new Error("Network response was not ok");
             return await res.json();
         } catch (error) {
             //映射完整逻辑，模拟后端

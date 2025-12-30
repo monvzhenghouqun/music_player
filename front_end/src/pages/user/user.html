@@ -27,13 +27,24 @@
                     </div>
                 </div>
 
-                <div onclick="loadPlaylist('rank')" class="playlist-card group cursor-pointer">
+                <!-- <div onclick="loadPlaylist('rank')" class="playlist-card group cursor-pointer">
                     <div class="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg transition-transform group-hover:scale-[1.02]">
                         <i class="fa-solid fa-chart-simple text-white text-4xl opacity-80 group-hover:scale-110 transition-transform"></i>
                         <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
                     <div class="mt-3">
-                        <p class="text-sm font-medium truncate">听歌排行</p>
+                        <p class="text-sm font-medium truncate">最近播放</p>
+                        <p class="text-[11px] text-slate-500 mt-1">最近播放统计</p>
+                    </div>
+                </div> -->
+
+                <div onclick="loadPlaylist('recent')" class="playlist-card group cursor-pointer">
+                    <div class="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg transition-transform group-hover:scale-[1.02]">
+                        <i class="fa-solid fa-clock-rotate-left text-white text-4xl opacity-80 group-hover:scale-110 transition-transform"></i>
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div class="mt-3">
+                        <p class="text-sm font-medium truncate">最近播放</p>
                         <p class="text-[11px] text-slate-500 mt-1">最近播放统计</p>
                     </div>
                 </div>
