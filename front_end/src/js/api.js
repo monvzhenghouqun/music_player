@@ -53,19 +53,6 @@
             }
         },
 
-        // //标准歌单   //每个歌单会和独立唯一的歌曲列表对应
-        // getPlaylistSongs: async (id) => {
-        //     try {
-        //         //后端对接
-        //         const res = await fetch(`${BASE_URL}/playlist_songs/${playlists_id}`);
-        //         if (!res.ok) throw new Error();
-        //         return await res.json();
-        //     } catch (error) {
-        //         console.warn("后端未响应，加载测试歌单歌曲...");
-        //         return //
-        //             
-        // },
-
         //  我的音乐 界面
         //  我喜欢的歌单    对应接口  //my/my_songlists_1_like?user_id=${user_id}   // 返回包含歌单信息的数组
         getMyLikedPlaylist: async (user_id) => {
@@ -127,60 +114,7 @@
 
 
         //  歌曲详情列表   //兼容 热门歌单和标准歌单  对应接口 //songlist/  // 根据歌曲id返回对应歌曲详情
-        //  注意:  传入了user_id,用于检测用户是否喜欢，待实现逻辑
-
-        //  const userId = localStorage.getItem('user_id') || '123'; // 示例获取方式
-        //  API.getPlaylistSongs(9, userId);
-
-
-        // 保留- 原先逻辑存档
-        // getPlaylistSongs : async (id, user_id) => {
-
-        //     console.log(`[API] 正在请求歌单详情，ID: ${id}, 用户ID: ${user_id}`);
-        //     try {
-        //         //后端对接
-        //         const res = await fetch(`${BASE_URL}/songslists/${id}?user_id=${user_id}`);
-        //         if (!res.ok) throw new Error("Network response was not ok");
-        //         return await res.json();
-        //     } catch (error) {
-        //         //映射完整逻辑，模拟后端
-        //         console.warn(`[API] 后端未响应，正在根据 ID ${id} 匹配测试集合...`);
-                
-        //         let songsDetail = [];
-        //         let title = "未知歌单";
-
-        //         // 将 ID 转为字符串匹配在 home 中定义的 song_id
-        //         switch (id.toString()) {
-        //             case '50':
-        //                 songsDetail = _List_SONGS_Commen_1;
-        //                 title = "大手子致敬";
-        //                 break;
-        //             case '51':
-        //                 songsDetail = _List_SONGS_Commen_2;
-        //                 title = "致敬大手子";
-        //                 break;
-        //             // case '52':
-        //             //     songsDetail = _List_SONGS_Commen_3;
-        //             //     title = "大手致敬子";
-        //             //     break;
-        //             // case '53':
-        //             //     songsDetail = _List_SONGS_Commen_4;
-        //             //     title = "大子致敬手";
-        //             //     break;
-        //             default:
-        //                 songsDetail = _List_SONGS_1; // 默认兜底
-        //                 title = "测试推荐歌单";
-        //         }
-
-        //         //  返回一个完整的歌单对象，playlist.js 拿到后直接渲染并缓存
-        //         return {
-        //             id: id,
-        //             title: title,
-        //             songs: songsDetail // 包含 filepath, url, artist 等所有信息
-        //         };
-        //     }
-        // },   
-
+        //  注意:  传入了user_id,用于检测用户是否喜欢
         //测试 
         getPlaylistSongs : async (playlist_id) => {
             let resultData;
@@ -238,7 +172,6 @@
                 };
             }
 
-            // --- 【关键修改点】 ---
             // 无论数据来源是哪里，只要拿到了歌曲列表，就立刻更新全局账本
             if (resultData && resultData.songs) {
                 console.log(`[API] 自动同步 ${resultData.songs.length} 首歌曲的喜欢状态到 AppState`);
@@ -289,7 +222,7 @@
 
 
         // 状态 api
-        //  切换歌曲喜欢状态     // status: true (喜欢) / false (取消喜欢)    //目前逻辑  完全静默，无回滚  //如果与后端同步失败刷新后会无法改变红心状态
+        // 切换歌曲喜欢状态     // status: true (喜欢) / false (取消喜欢)    //目前逻辑  完全静默，无回滚  //如果与后端同步失败刷新后会无法改变红心状态
         toggleLike: async (songId, status) => {
             console.log(`[API] 提交喜欢状态变更 - ID: ${songId}, Status: ${status}`);
             // const userId = localStorage.getItem('user_id') || '123';
@@ -376,18 +309,18 @@
                     body: JSON.stringify({
                         user_id: currentId,
                         playlist_id: playlist_id,
-                        song_ids: Array.from(song_ids) // 确保是数组
+                        song_ids: Array.from(song_ids)  // 确保是数组
                     })
                 });
                 if (!res.ok) throw new Error("批量删除失败");
                 return await res.json();
             } catch (error) {
                 console.error("[API] batchDeleteSongs Error:", error);
-                return { success: false };
+                throw error; 
             }
         },
 
-        // 批量添加歌曲到目标歌单
+        // 批量/单独  添加歌曲到目标歌单
         batchAddSongsToPlaylist: async (target_playlist_id, song_ids) => {
             const currentId = getUID();
             try {
@@ -404,15 +337,9 @@
                 return await res.json();
             } catch (error) {
                 console.error("[API] batchAddSongsToPlaylist Error:", error);
-                return { success: false };
+                throw error; 
             }
         },
-
-        
-
-
-
-
 
         // 注册逻辑：通过 UID 获取唯一凭证 (Cookie)   // 测试逻辑
         registerByUID: async (uid) => {
@@ -466,6 +393,7 @@
             }
         },
 
+        //用户行为统计    // 监控/日志 api
 
 
 

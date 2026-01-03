@@ -364,7 +364,6 @@ const Player = {
         // 更新 UI（你已经写好了 updateModeUI，它会自动更新图标）
         this.updateModeUI();
         
-        // 给用户一个简单的文字反馈
         const modeNames = {
             [PlayMode.LOOP]: '列表循环',
             [PlayMode.ONE]: '单曲循环',
@@ -382,7 +381,7 @@ const Player = {
         
         if (!sid) return;
 
-        // 2. 【核心】只从 AppState 获取当前状态 (这是唯一的真理账本)
+        // 2. 【核心】只从 AppState 获取当前状态 
         const currentStatus = window.AppState.isLiked(sid);
         const newStatus = !currentStatus; // 纯逻辑取反，保证灰色点击一定变 true
 
@@ -454,7 +453,7 @@ const Player = {
         }
         if (fpCover) fpCover.src = coverURL;
 
-        // 3. 歌词
+        // 歌词
         const lyricsBox = document.getElementById('fp-lyrics-content');
         if (lyricsBox) {
             if (s.lyrics) {
@@ -474,12 +473,12 @@ const Player = {
         this.updatePlayStateUI();
     },
 
-    // 
      /**
      * 核心：同步全页面所有相关红心图标的状态
      * @param {string|number} sid 歌曲ID
      * @param {boolean} isLiked 是否喜欢
      */
+
     updateLikeUI(sid, isLiked) {
         if (!sid) return;
         const targetId = String(sid);
@@ -675,38 +674,6 @@ const Player = {
             this.audio.currentTime = pct * this.audio.duration;
         };
     },
-
-    // initVolumeControl() {
-    //     const volContainer = document.getElementById('volume-container');
-    //     const volProgress = document.getElementById('volume-progress');
-
-    //     if (!volContainer || !volProgress) {
-    //         console.warn("[Player] 找不到音量控制组件，跳过绑定");
-    //         return;
-    //     }
-
-    //     // 设置初始音量 UI (跟随 audio 默认音量)
-    //     volProgress.style.width = `${this.audio.volume * 100}%`;
-
-    //     volContainer.onclick = (e) => {
-    //         // 计算点击位置占总宽度的比例
-    //         const rect = volContainer.getBoundingClientRect();
-    //         const offsetX = e.clientX - rect.left;
-    //         const width = rect.width;
-    //         let pct = offsetX / width;
-
-    //         // 边界处理：防止超出 0-1 范围
-    //         pct = Math.max(0, Math.min(1, pct));
-
-    //         // 核心：修改音频对象音量
-    //         this.audio.volume = pct;
-
-    //         // 更新 UI
-    //         volProgress.style.width = `${pct * 100}%`;
-            
-    //         console.log(`[Player] 音量调整为: ${Math.round(pct * 100)}%`);
-    //     };
-    // },
 
     initVolumeControl() {
         const configs = [

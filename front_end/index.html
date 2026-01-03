@@ -87,30 +87,13 @@
         
         <div class="w-full max-w-6xl flex items-center justify-between px-4">
             
-            <!-- <div class="flex items-center gap-10 w-1/4">
-                <button class="text-slate-500 hover:text-red-500 transition-all active:scale-90" title="喜欢">
-                    <i class="fa-regular fa-heart text-base"></i>
-                </button>
-                <button class="text-slate-500 hover:text-indigo-400 transition-all" title="播放模式">
-                    <i class="fa-solid fa-shuffle text-xs"></i>
-                </button>
-            </div>
-
-            <div class="flex items-center gap-10">
-                <button class="text-slate-500 hover:text-white text-xl transition-all active:scale-90"><i class="fa-solid fa-backward-step"></i></button>
-                
-                <button onclick="Player.toggle()" class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:scale-105 hover:bg-indigo-500 active:scale-95 transition-all shadow-[0_8px_25px_rgba(79,70,229,0.4)]">
-                    <i id="fp-play-icon" class="fa-solid fa-play text-2xl ml-1"></i>
-                </button>
-                
-                <button class="text-slate-500 hover:text-white text-xl transition-all active:scale-90"><i class="fa-solid fa-forward-step"></i></button>
-            </div> -->
+            
 
             <div class="flex items-center gap-10 w-1/4">
                 <button id="p-btn-like-bar" class="btn-like text-slate-500 hover:text-red-500 transition-all active:scale-90">
                     <i class="fa-regular fa-heart text-lg"></i>
                 </button>
-                <!-- onclick="Player.toggleLike()" -->
+                
 
                 <button onclick="Player.handleCollect()" class="text-slate-500 hover:text-white transition-all active:scale-90" title="收藏到歌单">
                     <i class="fa-regular fa-square-plus text-lg"></i>
@@ -118,7 +101,7 @@
 
 
                 <button onclick="Player.toggleMode()" class="player-action-btn btn-mode text-slate-500 hover:text-indigo-400 transition-all" title="播放模式">
-                    <!-- <i class="fa-solid fa-shuffle text-xs"></i> -->
+                    
                     <i class="fa-solid fa-shuffle text-xs"></i>
                 </button>
             </div>
@@ -138,23 +121,7 @@
             </div>
 
             <div class="flex items-center justify-end gap-10 w-1/4">
-                <!-- <div class="flex items-center gap-3 group">
-                    <i class="fa-solid fa-volume-low text-[10px] text-slate-500 group-hover:text-white"></i>
-                    <div class="w-20 h-0.5 bg-white/10 rounded-full cursor-pointer relative overflow-hidden">
-                        <div class="absolute h-full bg-indigo-500 w-2/3"></div>
-                    </div>
-                </div> -->
-                <!-- <button class="text-slate-500 hover:text-white transition-all">
-                    <i class="fa-solid fa-list-ul text-xs"></i>
-                </button> -->
-                <!-- <div class="flex items-center gap-3 group">
-                    <button onclick="Player.toggleMute()" class="flex items-center justify-center">
-                        <i id="p-volume-icon" class="fa-solid fa-volume-low text-slate-500 text-lg group-hover:text-indigo-500 transition-all"></i>
-                    </button>
-                    <div id="volume-container" class="w-24 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer relative overflow-hidden">
-                        <div id="volume-progress" class="absolute h-full bg-slate-400 w-2/3 group-hover:bg-indigo-400 transition-colors"></div>
-                    </div>
-                </div> -->
+                
 
                 <div class="flex items-center gap-3 group">
                     <button onclick="Player.toggleMute()" class="flex items-center justify-center p-1">
@@ -193,7 +160,7 @@
 
     <div id="queue-overlay" onclick="Player.toggleQueue()" class="fixed inset-0 bg-black/50 z-[190] opacity-0 pointer-events-none transition-opacity duration-300"></div>
 
-    <!--  -->
+  
 
     <nav class="h-16 bg-slate-900/95 border-b border-white/5 flex items-center px-6 shrink-0 z-20">
         <div class="flex items-center gap-8 text-sm font-medium">
@@ -232,16 +199,12 @@
             <div id="p-title" class="text-sm font-bold truncate">等待播放</div>
             <div id="p-artist" class="text-xs text-slate-500 truncate mt-1">--</div>
         </div>
-        <!--  -->
-        <!-- <div class="flex gap-3 ml-2">
-            <button class="text-slate-500 hover:text-red-500 transition-all active:scale-90"><i class="fa-regular fa-heart text-lg"></i></button>
-            <button class="text-slate-500 hover:text-indigo-400 transition-all active:scale-90"><i class="fa-solid fa-shuffle text-base"></i></button>
-        </div> -->
+        
         <div class="flex gap-3 ml-2">
             <button id="p-btn-like-full" class="player-action-btn btn-like text-slate-500 hover:text-red-500 transition-all active:scale-90" title="喜欢">
                 <i class="fa-regular fa-heart text-base"></i>
             </button>
-            <!-- onclick="Player.toggleLike()" -->
+            
 
             <button onclick="Player.handleCollect()" class="player-action-btn text-slate-500 hover:text-white transition-all active:scale-90" title="收藏到歌单">
                     <i class="fa-regular fa-square-plus text-base"></i>
@@ -255,13 +218,7 @@
     </div>
 
     <div class="flex flex-col items-center w-1/3 max-w-xl">
-        <!-- <div class="flex items-center gap-8 mb-2">
-            <button class="player-ctrl-btn"><i class="fa-solid fa-backward-step text-lg"></i></button>
-            <button onclick="Player.toggle()" class="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg">
-                <i id="p-btn-icon" class="fa-solid fa-play ml-0.5 text-lg"></i>
-            </button>
-            <button class="player-ctrl-btn"><i class="fa-solid fa-forward-step text-lg"></i></button>
-        </div> -->
+        
 
         <div class="flex items-center gap-8 mb-2">
             <button class="btn-prev player-ctrl-btn">
@@ -288,16 +245,7 @@
 
     <!-- 1 -->
     <div class="flex items-center justify-end gap-5 w-1/3">
-        <!-- <div class="flex items-center gap-3 group">
-            <i class="fa-solid fa-volume-low text-slate-500"></i>
-            <div id="volume-container" class="w-24 h-1 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer relative overflow-hidden">
-                <div id="volume-progress" class="absolute h-full bg-slate-400 w-2/3 group-hover:bg-indigo-400 transition-colors"></div>
-            </div>
-        </div> -->
-        <!-- <button class="text-slate-500 hover:text-indigo-500 transition text-sm"><i class="fa-solid fa-list-ul"></i></button> -->
-        <!-- <button onclick="Player.toggleQueue()" class="text-slate-500 hover:text-indigo-500 transition text-sm">
-            <i class="fa-solid fa-list-ul"></i>
-        </button> -->
+        
         <div class="flex items-center gap-3 group">
             <button onclick="Player.toggleMute()" class="flex items-center justify-center">
                 <i id="fp-volume-icon" class="fa-solid fa-volume-low text-slate-500 text-lg group-hover:text-indigo-500 transition-all"></i>
@@ -341,16 +289,6 @@
                 <div>
                     <label class="text-xs text-slate-500 mb-2 block font-medium">使用 Cookie 凭证登录</label>
                     
-                    <!-- <div class="flex flex-col gap-2">
-                        <input type="password" id="cookie-input" placeholder="输入您的凭证 (Cookie)" 
-                            class="dynamic-input w-full rounded-lg px-4 py-2 text-sm font-mono focus:outline-none focus:border-emerald-500 transition text-emerald-400">
-                        <button onclick="handleCookieLogin()" 
-                            class="dynamic-button-primary w-full py-2 rounded-lg text-sm transition font-bold text-white shadow-lg">验证并登录
-                        </button>
-                        <button onclick="handleLogout()" 
-                            id="btn-logout" class="hidden bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-lg text-sm transition font-medium border border-red-500/20">退出
-                        </button>
-                    </div> -->
 
                     <div class="flex flex-col gap-2">
                         <input type="password" id="cookie-input" placeholder="输入您的凭证 (Cookie)" 
@@ -422,35 +360,6 @@
             </div>
         </section>
 
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <div class="mt-auto pt-6 text-center">
             <p class="text-[10px] text-slate-600 font-mono tracking-widest">MUSEFLOW KERNEL V1.0.4-STABLE</p>
         </div>
@@ -500,34 +409,16 @@
         </div>
     </div> -->
 
-
-
-
-
-
-
     <script src="./src/pages/setting.js"></script>
     <script src="./src/js/LinkedList.js"></script>
     <script type="module" src="./src/js/api.js"></script>    
     <script src="./src/js/player.js"></script> 
     <script src="./src/js/router.js"></script>
     
-    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadPage('home');
         });
     </script>
-
-    <!-- 测试 -->
-    <!-- <script>
-        // 模拟点击了歌曲列表
-        window.onload = () => {
-            console.log("页面已加载，3秒后将自动填充数据进行测试...");
-            setTimeout(() => {
-                handlePlay("1"); // 自动触发 id 为 1 的歌曲
-            }, 3000);
-        }
-    </script> -->
 </body>
 </html>
