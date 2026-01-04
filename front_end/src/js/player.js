@@ -19,6 +19,53 @@ const Player = {
     init() {
         try {
             // 核心事件监听
+            // 注入 BehaviorTracker
+
+            // 进度更新
+            // this.audio.ontimeupdate = () => {
+            //     this.handleTimeUpdate();
+            //     // 驱动统计：告诉统计器现在正在播放，可以计秒
+            //     if (typeof BehaviorTracker !== 'undefined') {
+            //         BehaviorTracker.tick();
+            //     }
+            // };
+
+            this.audio.addEventListener('timeupdate', () => {
+                this.handleTimeUpdate();
+                if (typeof BehaviorTracker !== 'undefined') {
+                    BehaviorTracker.tick();
+                }
+            });
+
+            // 播放结束
+            this.audio.onended = () => {
+                // 结算当前歌曲：标记为播放完成 (complete)
+                if (typeof BehaviorTracker !== 'undefined') {
+                    BehaviorTracker.end('complete');
+                }
+                this.next(true); 
+            };
+
+            // 监听拖动：开始拖动进度条时停表
+            this.audio.onseeking = () => {
+                if (typeof BehaviorTracker !== 'undefined') BehaviorTracker.setSeeking(true);
+            };
+
+            // 监听拖动结束：松开进度条后恢复计秒
+            this.audio.onseeked = () => {
+                if (typeof BehaviorTracker !== 'undefined') BehaviorTracker.setSeeking(false);
+            };
+
+            // 监听暂停：停止物理时间累加
+            this.audio.onpause = () => {
+                if (typeof BehaviorTracker !== 'undefined') BehaviorTracker.pause();
+            };
+
+            // 网页关闭监听：防止用户直接关掉网页导致最后一段播放没统计
+            window.addEventListener('beforeunload', () => {
+                if (typeof BehaviorTracker !== 'undefined') BehaviorTracker.end('quit');
+            });
+
             this.audio.ontimeupdate = () => this.handleTimeUpdate();
             this.audio.onended = () => this.next(true);
 
@@ -199,6 +246,14 @@ const Player = {
 
     async loadSong(song) {
         if (!song) return;
+
+        // 开启新歌审计
+        // 如果之前有正在播的歌，BehaviorTracker 内部会自动触发上一首的 end('skip')
+        if (typeof BehaviorTracker !== 'undefined') {
+            BehaviorTracker.start(song);
+        }
+
+        this.currentSong = song;
 
         this.audio.pause();
 
@@ -831,113 +886,6 @@ const Player = {
         }
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-/**
- * 行为采集器 (单例模式)
- * 负责精确统计“实际播放时长”，排除拖动进度条的时间
- */
-
-
-const BehaviorTracker = {
-    currentSession: null,
-    
-    // 开始新的会话
-    start(song) {
-        // 如果有未结束的会话（比如切歌了），先结算上一个
-        if (this.currentSession) {
-            this.end('skip'); 
-        }
-
-        if (!song) return;
-
-        this.currentSession = {
-            song_id: String(song.song_id || song.id),
-            duration: song.duration || 0, // 如果后端没给 duration，会在 loadedmetadata 更新
-            startTime: Date.now(),
-            accumulatedTime: 0, // 累计听歌时长 (秒)
-            lastTickTime: null, // 上一次 update 的时间戳
-            isDragging: false   // 是否正在拖动进度条
-        };
-        console.log("[Tracker] 开始统计:", this.currentSession.song_id);
-    },
-
-    // 播放过程中的心跳 (由 timeupdate 驱动)
-    tick(currentTime) {
-        if (!this.currentSession || this.currentSession.isDragging) return;
-
-        const now = Date.now();
-        
-        // 如果是刚开始或者刚暂停回来，重置 lastTick
-        if (!this.currentSession.lastTickTime) {
-            this.currentSession.lastTickTime = now;
-            return;
-        }
-
-        // 计算两次 tick 之间的物理时间差 (通常是 0.2~0.3秒)
-        const delta = (now - this.currentSession.lastTickTime) / 1000;
-
-        // 异常过滤：如果两次 tick 间隔超过 2 秒 (可能浏览器卡顿或休眠)，不计入时长，防止数据虚高
-        if (delta > 0 && delta < 2.0) {
-            this.currentSession.accumulatedTime += delta;
-        }
-
-        this.currentSession.lastTickTime = now;
-    },
-
-    // 用户暂停/拖动时，暂停计时
-    pause() {
-        if (this.currentSession) {
-            this.currentSession.lastTickTime = null; // 清空锚点
-        }
-    },
-
-    // 标记正在拖动 (Seeking)
-    setSeeking(isSeeking) {
-        if (!this.currentSession) return;
-        this.currentSession.isDragging = isSeeking;
-        if (isSeeking) {
-            this.currentSession.lastTickTime = null; // 拖动开始，暂停计时
-        } else {
-            this.currentSession.lastTickTime = Date.now(); // 拖动结束，重置锚点
-        }
-    },
-
-    // 结算并上报
-    end(reason) {
-        if (!this.currentSession) return;
-
-        const s = this.currentSession;
-        const totalPlayed = s.accumulatedTime;
-
-        // 构造 payload
-        const payload = {
-            user_id: window.CurrentUID || localStorage.getItem('user_id'), // 需要确保能拿到 UID
-            song_id: s.song_id,
-            duration: window.Player.audio.duration || 0, // 尝试获取真实时长
-            played_time: totalPlayed,
-            end_reason: reason, // 'skip', 'complete', 'quit'
-            timestamp: Date.now()
-        };
-
-        // 发送给 API 层
-        window.API.reportUserBehavior(payload);
-
-        // 清理当前会话
-        this.currentSession = null;
-    }
-};
-
-
 
 
 window.Player = Player;

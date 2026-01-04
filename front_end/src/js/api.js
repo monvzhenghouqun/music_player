@@ -452,13 +452,14 @@
          * song_id: string,
          * duration: number,      // 歌曲总长
          * played_time: number,   // 实际播放时长(秒)
-         * end_reason: string,    // 'complete'(播完) | 'skip'(切歌) | 'quit'(退出)
-         * timestamp: number
+         * end_type: string,    // 'complete'(播完) | 'skip'(切歌) | 'quit'(退出)
+         * timestamp: number,
+         * position：number
          * }
          */
 
         reportUserBehavior: async (payload) => {
-            console.log(`[Analytics] 准备上报: [${payload.end_reason}] 听了 ${payload.played_time.toFixed(1)}s`);
+            console.log(`[Analytics] 准备上报: [${payload.end_type}] 听了 ${payload.played_time.toFixed(1)}s`);
 
             // 过滤逻辑 (The Filter)
             // 如果实际播放时间小于 5 秒，且不是由于只有 5 秒就播完（极短歌曲），则视为无效播放
@@ -473,7 +474,7 @@
             queue.push(payload);
 
             // 批量发送阈值 (例如积攒了 3 条，或者这是一次 'quit' 事件，就立即发送)
-            if (queue.length >= 3 || payload.end_reason === 'quit' || payload.end_reason === 'complete') {
+            if (queue.length >= 3 || payload.end_type === 'quit' || payload.end_type === 'complete') {
                 await window.API._flushAnalyticsQueue(queue);
             } else {
                 // 存回本地等待下一次触发
