@@ -1,11 +1,18 @@
 
 (function() {
-    const UserView = {
+    window.UserView = {
         // 测试
-        userId: "12345678", // 实际应从 localStorage 获取
+        // userId: "12345678", // 实际应从 localStorage 获取
+
+        // 缓存当前的数据，用于管理弹窗显示
+        dataCache: {
+            created: [],
+            collected: []
+        },
 
         async init() {
             console.log("[User] 初始化我的音乐界面...");
+            this.userId = window.API ? window.API.getUID && window.API.getUID() : "123";
             
             //  初始化顶部固定卡片 (喜欢 & 最近)
             this.initSpecialCards();
@@ -59,15 +66,22 @@
 
             try {
                 const data = await API.getMyCreatedPlaylists(this.userId);
-                const list = data.playlists || [];
-
-                // 测试
-                const html = list.map(pl => this.createPlaylistCard(pl)).join('');     // 生成 HTML 字符串
+                this.dataCache.created = data.playlists || [];
                 
-                // 渲染前清空 (保留 grid 结构)
-                // container.innerHTML = list.map(pl => this.createPlaylistCard(pl)).join('');
+                // --- 关键：清理旧的动态卡片，不影响硬编码的 card-liked 和 card-recent ---
+                const existingDynamic = container.querySelectorAll('.js-dynamic-card');
+                existingDynamic.forEach(el => el.remove());
 
+                const html = this.dataCache.created.map(pl => {
+                    // 确保调用时传入了 'created' 参数
+                    let cardHtml = this.createPlaylistCard(pl, 'created');
+                    // 动态给这个字符串添加一个类名 js-dynamic-card
+                    return cardHtml.replace('playlist-card', 'playlist-card js-dynamic-card');
+                }).join('');
+
+                // --- 关键：追加到容器末尾 ---
                 container.insertAdjacentHTML('beforeend', html);
+                
 
             } catch (e) {
                 console.error("加载我创建歌单失败", e);
@@ -80,16 +94,24 @@
             if (!container) return;
 
             // 每次进入界面都会重新 fetch 接口 //my/my_songlists_2?user_id=...
-            const data = await API.getMyCollectedPlaylists(this.userId);
+            // const data = await API.getMyCollectedPlaylists(this.userId);
 
             try {
                 const data = await API.getMyCollectedPlaylists(this.userId);
-                const list = data.playlists || [];
+                // ataCache.collected = data.playlists || []; // 缓存数据
+                this.dataCache.collected = data.playlists || [];
+                // const list = data.playlists || [];
 
-                if (list.length === 0) {
-                    container.innerHTML = `<div class="text-slate-600 text-xs col-span-full">暂无收藏歌单</div>`;
+                // if (list.length === 0) {
+                //     container.innerHTML = `<div class="text-slate-600 text-xs col-span-full">暂无收藏歌单</div>`;
+                // } else {
+                //     container.innerHTML = list.map(pl => this.createPlaylistCard(pl)).join('');
+                // }
+
+                if (this.dataCache.collected.length === 0) {
+                    container.innerHTML = `<div class="text-slate-600 text-xs col-span-full py-4">暂无收藏歌单</div>`;
                 } else {
-                    container.innerHTML = list.map(pl => this.createPlaylistCard(pl)).join('');
+                    container.innerHTML = this.dataCache.collected.map(pl => this.createPlaylistCard(pl, 'collected')).join('');
                 }
             } catch (e) {
                 console.error("加载我收藏歌单失败", e);
@@ -97,59 +119,162 @@
         },
 
         // 渲染单个歌单卡片 HTML
-        
-        // createPlaylistCard(playlist) {
-        //     const pid = playlist.playlist_id || playlist.id;  // 兼容接口返回字段 playlist_id / id，
-        //     const imgUrl = playlist.url;  
-
-        //     return `
-        //         <div onclick="loadPage('playlist', { id: '${pid}' })" class="playlist-card group cursor-pointer animate-card">
-        //             <div class="relative aspect-square rounded-2xl overflow-hidden shadow-lg transition-transform group-hover:scale-[1.02] bg-slate-800">
-        //                 <img src="${imgUrl}" class="w-full h-full object-cover" alt="${playlist.title}">
-        //                 <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-        //                     <button class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 flex items-center justify-center">
-        //                          <i class="fa-solid fa-play text-xs"></i>
-        //                     </button>
-        //                 </div>
-        //             </div>
-        //             <div class="mt-3">
-        //                 <p class="text-sm font-medium truncate text-slate-200">${playlist.title}</p>
-        //                 <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-tighter">${playlist.song_count || 0} Tracks</p>
-        //             </div>
-        //         </div>
-        //     `;
-        // }
-
-        createPlaylistCard(playlist) {
+        createPlaylistCard(playlist, type) {
+            const cardType = type || 'created';
             const pid = playlist.playlist_id || playlist.id;  
-            const imgUrl = playlist.url || 'src/assets/default_cover.jpg';  
+            const imgUrl = playlist.url || 'src/assets/default_cover.jpg'; 
+            const domId = `card-${type}-${pid}`; // 生成唯一 DOM ID 
+
+            // return `
+            //     <div onclick="loadPage('playlist', { id: '${pid}' })" class="playlist-card group cursor-pointer animate-card">
+            //         <div class="relative aspect-square rounded-2xl overflow-hidden shadow-lg transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-indigo-500/20 bg-slate-800">
+                        
+            //             <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="${playlist.title}">
+                        
+            //             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            
+            //                 <div class="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            //                     <i class="fa-solid fa-play text-white ml-1"></i>
+            //                 </div>
+                            
+            //             </div>
+            //         </div>
+
+            //         <div class="mt-3">
+            //             <p class="text-sm font-medium truncate text-slate-200 group-hover:text-indigo-400 transition-colors">${playlist.title}</p>
+            //             <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">${playlist.song_count || 0} Tracks</p>
+            //         </div>
+            //     </div>
+            // `;
 
             return `
-                <div onclick="loadPage('playlist', { id: '${pid}' })" class="playlist-card group cursor-pointer animate-card">
-                    <div class="relative aspect-square rounded-2xl overflow-hidden shadow-lg transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-indigo-500/20 bg-slate-800">
-                        
+                <div id="${domId}" onclick="loadPage('playlist', { id: '${pid}' })" class="playlist-card group cursor-pointer animate-card relative">
+                    <div class="relative aspect-square rounded-2xl overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-[1.02] bg-slate-800">
                         <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="${playlist.title}">
-                        
-                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            
-                            <div class="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                <i class="fa-solid fa-play text-white ml-1"></i>
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center shadow-xl translate-y-4 group-hover:translate-y-0 transition-transform">
+                                <i class="fa-solid fa-play text-white ml-1 text-sm"></i>
                             </div>
-                            
                         </div>
                     </div>
-
                     <div class="mt-3">
                         <p class="text-sm font-medium truncate text-slate-200 group-hover:text-indigo-400 transition-colors">${playlist.title}</p>
                         <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">${playlist.song_count || 0} Tracks</p>
                     </div>
                 </div>
             `;
-        }
+        },
+
+        // 打开管理模态框
+        openManageModal() {
+            const modal = document.getElementById('playlist-manage-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                this.renderManageLists(); // 渲染列表
+            }
+        },
+
+        // 关闭管理模态框
+        closeManageModal() {
+            const modal = document.getElementById('playlist-manage-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        },
+
+        // 渲染管理列表 (在弹窗内)
+        renderManageLists() {
+            const createdList = document.getElementById('manage-list-created');
+            const collectedList = document.getElementById('manage-list-collected');
+
+            // 渲染我创建的
+            if (createdList) {
+                createdList.innerHTML = this.dataCache.created.map(pl => `
+                    <div id="manage-item-created-${pl.playlist_id || pl.id}" class="flex justify-between items-center bg-white/5 p-3 rounded-lg hover:bg-white/10 transition-colors group">
+                        <span class="text-sm text-slate-300 truncate w-2/3">${pl.title}</span>
+                        <button onclick="UserView.handleDelete('${pl.playlist_id || pl.id}', 'created')" class="text-xs text-slate-500 hover:text-red-500 px-2 py-1 transition-colors">
+                            <i class="fa-solid fa-trash-can"></i> 删除
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // 渲染我收藏的
+            if (collectedList) {
+                collectedList.innerHTML = this.dataCache.collected.map(pl => `
+                    <div id="manage-item-collected-${pl.playlist_id || pl.id}" class="flex justify-between items-center bg-white/5 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                        <span class="text-sm text-slate-300 truncate w-2/3">${pl.title}</span>
+                        <button onclick="UserView.handleDelete('${pl.playlist_id || pl.id}', 'collected')" class="text-xs text-slate-500 hover:text-red-500 px-2 py-1 transition-colors">
+                            <i class="fa-solid fa-heart-crack"></i> 取消
+                        </button>
+                    </div>
+                `).join('');
+            }
+        },
+
+        // 处理新建歌单
+        async handleCreate() {
+            const input = document.getElementById('manage-input-title');
+            const title = input.value.trim();
+            if (!title) return alert("请输入歌单名称");
+
+            // 1. 调用 API
+            const res = await API.createPlaylist(title);
+            
+            if (res && res.success) {
+                // 2. 更新本地缓存
+                this.dataCache.created.push(res.playlist);
+                
+                // 3. 更新主界面网格 (追加 HTML)
+                const grid = document.getElementById('created-playlists-grid');
+                if (grid) {
+                    grid.insertAdjacentHTML('beforeend', this.createPlaylistCard(res.playlist, 'created'));
+                }
+
+                // 4. 更新管理列表 (刷新当前弹窗列表)
+                this.renderManageLists();
+
+                // 5. 清空输入
+                input.value = '';
+            }
+        },
+
+        // 处理删除/取消收藏 (静默模式：UI 立即反应)
+        handleDelete(id, type) {
+            if (!confirm(type === 'created' ? "确定要永久删除这个歌单吗？" : "确定要取消收藏吗？")) return;
+
+            // 1. UI 立即移除 (管理列表项)
+            const manageItem = document.getElementById(`manage-item-${type}-${id}`);
+            if (manageItem) manageItem.remove();
+
+            // 2. UI 立即移除 (主界面卡片)
+            const mainCard = document.getElementById(`card-${type}-${id}`);
+            if (mainCard) {
+                mainCard.style.opacity = '0';
+                mainCard.style.transform = 'scale(0.9)';
+                setTimeout(() => mainCard.remove(), 300); // 动画后移除
+            }
+
+            // 3. 更新本地缓存 (防止关掉弹窗后再打开又出现了)
+            if (type === 'created') {
+                this.dataCache.created = this.dataCache.created.filter(p => (p.playlist_id || p.id) != id);
+                // 4. 发送后端请求 (静默)
+                API.deleteCreatedPlaylist(id);
+            } else {
+                this.dataCache.collected = this.dataCache.collected.filter(p => (p.playlist_id || p.id) != id);
+                // 4. 发送后端请求 (静默)
+                API.uncollectPlaylist(id);
+            }
+        },
+
     };
 
+    
     // 挂载到全局
     window.PageHandlers = window.PageHandlers || {};
     window.PageHandlers.user = () => UserView.init();
+    window.UserView.init();
 
 })();

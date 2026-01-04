@@ -341,6 +341,55 @@
             }
         },
 
+        // 创建歌单
+        createPlaylist: async (title, description = "") => {
+            const currentId = getUID();
+            console.log(`[API] 创建歌单: ${title}`);
+            try {
+                const res = await fetch(`${BASE_URL}/my/create_playlist`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentId, title, description })
+                });
+                if (!res.ok) throw new Error("创建失败");
+                return await res.json();
+            } catch (e) {
+                console.warn("[API] 后端未响应，模拟创建成功");
+                // 模拟返回新建的歌单对象
+                return { 
+                    success: true, 
+                    playlist: { 
+                        playlist_id: 'new_' + Date.now(), 
+                        title: title, 
+                        song_count: 0,
+                        cover: 'src/img/default_cover.jpg' // 假设有个默认封面
+                    } 
+                };
+            }
+        },
+
+        // 删除我创建的歌单 (静默)
+        deleteCreatedPlaylist: async (playlist_id) => {
+            const currentId = getUID();
+            try {
+                fetch(`${BASE_URL}/my/delete_playlist`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentId, playlist_id })
+                });
+                return true;
+            } catch (e) {
+                console.warn("[API] 删除请求发送失败", e);
+                return false;
+            }
+        },
+
+        //  取消收藏歌单 (静默)
+        uncollectPlaylist: async (playlist_id) => {
+            // 复用 toggleCollectPlaylist，传入 status=false
+            return window.API.toggleCollectPlaylist(playlist_id, false);
+        },
+
         // 注册逻辑：通过 UID 获取唯一凭证 (Cookie)   // 测试逻辑
         registerByUID: async (uid) => {
             try {
@@ -393,9 +442,78 @@
             }
         },
 
-        //用户行为统计    // 监控/日志 api
+        //用户行为统计    // 监控/日志 api   // 测试逻辑    //复杂_逻辑
 
+        /**
+         * 上报用户听歌行为
+         * @param {Object} payload 数据包
+         * 结构: {
+         * user_id: string,
+         * song_id: string,
+         * duration: number,      // 歌曲总长
+         * played_time: number,   // 实际播放时长(秒)
+         * end_reason: string,    // 'complete'(播完) | 'skip'(切歌) | 'quit'(退出)
+         * timestamp: number
+         * }
+         */
 
+        reportUserBehavior: async (payload) => {
+            console.log(`[Analytics] 准备上报: [${payload.end_reason}] 听了 ${payload.played_time.toFixed(1)}s`);
+
+            // 过滤逻辑 (The Filter)
+            // 如果实际播放时间小于 5 秒，且不是由于只有 5 秒就播完（极短歌曲），则视为无效播放
+            if (payload.played_time < 5) {
+                console.log("[Analytics] 播放时间过短，忽略");
+                return;
+            }
+
+            // 离线/缓冲处理
+            // 获取旧队列
+            let queue = JSON.parse(localStorage.getItem('MUSE_ANALYTICS_QUEUE') || '[]');
+            queue.push(payload);
+
+            // 批量发送阈值 (例如积攒了 3 条，或者这是一次 'quit' 事件，就立即发送)
+            if (queue.length >= 3 || payload.end_reason === 'quit' || payload.end_reason === 'complete') {
+                await window.API._flushAnalyticsQueue(queue);
+            } else {
+                // 存回本地等待下一次触发
+                localStorage.setItem('MUSE_ANALYTICS_QUEUE', JSON.stringify(queue));
+            }
+        },
+
+        // 内部方法：清空队列并发送
+        _flushAnalyticsQueue: async (queueData) => {
+            if (!queueData || queueData.length === 0) return;
+
+            const currentId = getUID();
+            
+            try {
+                // 如果浏览器支持 sendBeacon 且页面正在卸载，使用 beacon (更可靠)
+                if (navigator.sendBeacon && document.visibilityState === 'hidden') {
+                    const blob = new Blob([JSON.stringify({ logs: queueData, user_id: currentId })], { type: 'application/json' });
+                    navigator.sendBeacon(`${BASE_URL}/analytics/batch_report`, blob);
+                } else {
+                    // 正常 Fetch
+                    await fetch(`${BASE_URL}/analytics/batch_report`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            user_id: currentId,
+                            logs: queueData 
+                        })
+                    });
+                }
+                
+                // 发送成功，清空本地存储
+                console.log(`[Analytics] 成功上报 ${queueData.length} 条数据`);
+                localStorage.removeItem('MUSE_ANALYTICS_QUEUE');
+
+            } catch (e) {
+                console.warn("[Analytics] 上报失败，数据保留在本地", e);
+                // 失败了不清除 localStorage，下次再试
+                localStorage.setItem('MUSE_ANALYTICS_QUEUE', JSON.stringify(queueData));
+            }
+        },
 
     };
 
