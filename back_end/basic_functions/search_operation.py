@@ -8,7 +8,7 @@ from db import db_operations
 logger = logging.getLogger("basic_functions[s]")
 
 # 模糊搜索
-async def get_searh_information(content: str, user_id: str | int):
+async def get_searh_information(content, user_id):
     result = TreeOperation.search_avl_tree(content)
     if not result: return False
 

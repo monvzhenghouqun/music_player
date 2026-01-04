@@ -813,14 +813,38 @@ class UserPlaylistTable:
         WHERE up.user_id = ?
         ORDER BY up.position ASC
         """
+
         try:
             async with db_context() as conn:
                 cursor = await conn.cursor()
                 await cursor.execute(sql, (user_id,))
                 rows = await cursor.fetchall()
+                logger.info(f"成功查询用户的所有歌单")
                 return [dict(row) for row in rows]
         except aiosqlite.Error as e:
             logger.error(f"查询用户歌单失败：{e}")
+            raise
+
+    # 查询用户是否收藏了歌单
+    @classmethod
+    async def get_playlists_if_collected(cls, playlist_id, user_id):
+        sql = """
+        SELECT EXISTS(
+            SELECT 1 
+            FROM user_playlists 
+            WHERE user_id = ? AND playlist_id = ?
+        );
+        """
+
+        try:
+            async with db_context() as conn:
+                cursor = await conn.cursor()
+                await cursor.execute(sql, (playlist_id, user_id))
+                exists = await cursor.fetchone()
+                logger.info(f"成功查询用户的是否收藏歌单")
+                return exists[0]
+        except aiosqlite.Error as e:
+            logger.error(f"查询用户是否收藏歌单失败：{e}")
             raise
 
     # @classmethod
