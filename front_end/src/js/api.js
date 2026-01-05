@@ -300,6 +300,28 @@
             }
         },
 
+        // 记录用户听歌历史  // 用于"最近播放"列表
+        recordListeningHistory: async (songId) => {
+            const currentId = getUID();
+            console.log(`[History] 歌曲 ${songId} 播放达标(>5s)，加入历史记录`);
+
+            try {
+                // 假设后端接口是 /my/history/add
+                // 你需要根据你实际的后端路由修改 url
+                await fetch(`${BASE_URL}/my/history/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentId,
+                        song_id: songId,
+                        timestamp: Date.now()
+                    })
+                });
+            } catch (e) {
+                console.warn("[History] 历史记录同步失败", e);
+            }
+        },
+
         // 收藏/取消收藏歌单    // status: true (收藏）, false （取消）
         toggleCollectPlaylist: async (playlist_id, status) => {
             const currentId = getUID();

@@ -19,7 +19,8 @@ const BehaviorTracker = {
             startTime: Date.now(),          // 开始时间
             accumulatedTime: 0,             // 真实 累计播放秒数 
             lastTickTime: null,             // 上一次 计时点 的时间戳
-            isDragging: false               // 标记用户行为   //是否正在拖动进度条
+            isDragging: false,              // 标记用户行为   //是否正在拖动进度条
+            hasRecordedHistory: false       // 锁：标记这首歌是否已经上报过“历史记录”
         };
         console.log("[Tracker] 开始统计:", this.currentSession.song_id);
     },
@@ -41,10 +42,21 @@ const BehaviorTracker = {
         const delta = (now - this.currentSession.lastTickTime) / 1000;
         // console.log("时间增量 delta:", delta);   // 测试
 
-        // 异常过滤：如两次 tick 间隔超过 2s (浏览器卡顿/休眠)  不计入时长
+        // 异常过滤：两次 tick 间隔超过 2s (浏览器卡顿/休眠)  不计入时长
         if (delta > 0 && delta < 2.0) {
             this.currentSession.accumulatedTime += delta;
             // console.log("当前累计时长:", this.currentSession.accumulatedTime); // 测试
+            // 核心监听代码：实时检测是否达标   // 还没上报过历史 (Lock is false) / 累计时长 >= 5秒
+            if (!this.currentSession.hasRecordedHistory && this.currentSession.accumulatedTime >= 5) {
+                
+                //  立刻上锁，防止下一次 tick 重复触发
+                this.currentSession.hasRecordedHistory = true;
+
+                //  调用 API
+                if (window.API && window.API.recordListeningHistory) {
+                    window.API.recordListeningHistory(this.currentSession.song_id);
+                }
+            }
         }
 
         this.currentSession.lastTickTime = now;  //  更新锚点，等待下一次 tick
