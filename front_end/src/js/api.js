@@ -380,7 +380,7 @@
         },
 
         // 批量/单独  添加歌曲到目标歌单
-        batchAddSongsToPlaylist: async (target_playlist_id, song_ids) => {
+        batchAddSongsToPlaylist: async (playlist_id, song_ids) => {
             const currentId = getUID();
             try {
                 const res = await fetch(`${BASE_URL}/playlist/songs/batch_add`, {
@@ -388,7 +388,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         user_id: currentId,
-                        target_playlist_id: target_playlist_id,
+                        playlist_id: playlist_id,
                         song_ids: Array.from(song_ids)
                     })
                 });

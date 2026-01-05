@@ -871,12 +871,18 @@
         },
 
         // 添加到歌单   // 测试
-        async confirmAddToPlaylist(targetPlaylistId) {
+        async confirmAddToPlaylist(playlist_id) {
             const idsToProcess = this._tempTargetIds || this.selectedSongIds;
 
-            if (!idsToProcess || this.selectedSongIds.size === 0) return;
+            // if (!idsToProcess || this.selectedSongIds.size === 0) return;
 
-            const result = await API.batchAddSongsToPlaylist(targetPlaylistId, this.selectedSongIds);
+            const hasIds = idsToProcess instanceof Set ? idsToProcess.size > 0 : (idsToProcess && idsToProcess.length > 0);
+            if (!hasIds) {
+                alert("请先选择歌曲");
+                return;
+            }
+
+            const result = await API.batchAddSongsToPlaylist(playlist_id, idsToProcess);
     
             if (result.success) {
                 this.closeModal();
