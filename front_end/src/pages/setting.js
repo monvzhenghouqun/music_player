@@ -13,14 +13,14 @@ async function fetchNewCookie() {
         return;
     }
 
-    // 模拟后端算法：UID -> 加密生成 Cookie
-    // const generatedCookie = "MF_" + btoa(uid + "salt_2025").substring(0, 16);
+    const salt = "salt_2025";
+    const generatedCookie = "MF_" + btoa(uid + salt).substring(0, 16);
 
     try {
-        const result = await window.API.registerByUID(uid);
+        const result = await window.API.registerByUID(uid, generatedCookie);
         if (result.success) {
             // 将拿到的“Cookie”填入下方的登录框
-            document.getElementById('cookie-input').value = result.cookie;
+            document.getElementById('cookie-input').value = generatedCookie;
             alert("凭证生成成功！请妥善保存您的 Cookie。");
             // console.log(`UID: ${uid} -> Cookie: ${generatedCookie}`);
         }

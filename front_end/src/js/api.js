@@ -450,12 +450,15 @@
         },
 
         // 注册逻辑：通过 UID 获取唯一凭证 (Cookie)   // 测试逻辑
-        registerByUID: async (uid) => {
+        registerByUID: async (uid, cookie) => {
             try {
                 const res = await fetch(`${BASE_URL}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: uid })
+                    body: JSON.stringify({ 
+                        uid: uid, 
+                        cookie: cookie
+                    })
                 });
                 const data = await res.json();
                 
