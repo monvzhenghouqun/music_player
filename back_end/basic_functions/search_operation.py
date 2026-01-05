@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from decision import avl_tree
 from db import db_operations
 
-logger = logging.getLogger("basic_functions[s]")
+logger = logging.getLogger("basic_functions[se]")
 
 # 模糊搜索
 async def get_searh_information(content, user_id):
