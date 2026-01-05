@@ -259,7 +259,7 @@
 
 
         // 状态 api
-        // 切换歌曲喜欢状态     // status: true (喜欢) / false (取消喜欢)    //目前逻辑  完全静默，无回滚  //如果与后端同步失败刷新后会无法改变红心状态
+        // 切换歌曲喜欢状态     // status: true (喜欢) / false (取消喜欢)    //目前逻辑  回滚  //如果与后端同步失败刷新后会无法改变红心状态
         toggleLike: async (songId, status) => {
             console.log(`[API] 提交喜欢状态变更 - ID: ${songId}, Status: ${status}`);
             // const userId = localStorage.getItem('user_id') || '123';
@@ -341,7 +341,7 @@
             } catch (error) {
                 console.error("[API] 收藏歌单失败:", error);
                 // 模拟成功以便前端演示
-                return { success: true };
+                return { success: true , message: "操作成功" };
             }
         },
 
