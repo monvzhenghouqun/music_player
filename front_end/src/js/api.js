@@ -606,7 +606,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        uid: user_id, 
+                        uid: uid, 
                         cookie: cookie
                     })
                 });
