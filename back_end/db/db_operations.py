@@ -668,7 +668,8 @@ class PlaylistTable:
     @classmethod
     async def get_playlists(cls, limit=20):
         sql = """
-        SELECT * FROM playlists
+        SELECT id AS playlist_id, creator_id, name AS title, play_count, song_count, type, url, created_at
+        FROM playlists
         WHERE type = 'public'
         ORDER BY play_count DESC
         LIMIT ?;
@@ -690,7 +691,7 @@ class PlaylistTable:
     async def get_playlist_by_id(cls, playlist_id):
         sql = "SELECT * FROM playlists WHERE id = ?"
         try:
-            if not await cls.exists(playlist_id): raise ValueError('歌单id不存在')
+            if not await cls.exists(playlist_id): raise ValueError(f'歌单id{playlist_id}不存在')
             async with db_context() as conn:
                 cursor = await conn.cursor()
                 await cursor.execute(sql, (playlist_id,))
@@ -718,6 +719,26 @@ class PlaylistTable:
 
                 logger.info(f"查询歌单成功，type：{type}")
                 return dict(row) if row else None
+        except aiosqlite.Error as e:
+            logger.error(f"查询歌单失败：{e}")
+            raise
+
+    # 根据用户ID查询多个歌单
+    @classmethod
+    async def get_playlist_by_uid2(cls, user_id, type='public'):
+        sql = """
+        SELECT id AS playlist_id, name AS title, creator_id, type, url, play_count, song_count
+        FROM playlists 
+        WHERE creator_id = ? AND type = ?
+        """
+        try:
+            async with db_context() as conn:
+                cursor = await conn.cursor()
+                await cursor.execute(sql, (user_id, type))
+                rows = await cursor.fetchall()
+
+                logger.info(f"查询歌单成功，type：{type}")
+                return [dict(row) for row in rows]
         except aiosqlite.Error as e:
             logger.error(f"查询歌单失败：{e}")
             raise
@@ -982,6 +1003,7 @@ class PlaylistSongTable:
     @classmethod
     async def remove_song_from_playlist(cls, playlist_id, song_id):
         sql = "DELETE FROM playlist_songs WHERE playlist_id = ? AND song_id = ?"
+        print(playlist_id, song_id)
         try:
             async with db_context() as conn:
                 cursor = await conn.cursor()
@@ -1058,7 +1080,7 @@ class Analytics:
     def tuple_to_list(cls, rows):
         result = []
         for row in rows:
-            result.append(row)
+            result.append(dict(row))
         return result
 
     @classmethod
@@ -1075,10 +1097,11 @@ class Analytics:
     
     @classmethod
     def if_is_loved(cls, loved_songs, songs):
+        loved_songs_list = [item['song_id'] for item in loved_songs]
         for s in songs: 
             s.pop('play_count', None)
-            s['is_loved'] = 0
-            if s['id'] in loved_songs: s['is_loved'] = 1
+            if s['id'] in loved_songs_list: s['is_loved'] = 1
+            else: s['is_loved'] = 0
         return songs
     
 
@@ -1171,7 +1194,7 @@ class Analytics:
                 cursor = await conn.execute(sql, (user_id,))
                 rows = await cursor.fetchall()
                 songs = cls.tuple_to_list(rows)
-                logger.info("get_user_playlists成功提取信息")
+                logger.info("get_user_playlists2成功提取信息")
                 return songs
 
         except aiosqlite.Error as e:

@@ -61,11 +61,14 @@ function executePageScripts(container) {
     const scripts = container.querySelectorAll('script');
     scripts.forEach(oldScript => {
         const newScript = document.createElement('script');
-        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        // 不复制 defer 属性，避免动态注入时脚本被延迟或不执行
+        Array.from(oldScript.attributes).forEach(attr => {
+            if (attr.name === 'defer') return;
+            newScript.setAttribute(attr.name, attr.value);
+        });
         newScript.textContent = oldScript.textContent;
         oldScript.parentNode.replaceChild(newScript, oldScript);
     });
 }
 
 window.loadPage = loadPage;
-

@@ -11,7 +11,66 @@
 
     } from './mock_data.js';
 
-    const BASE_URL = "http://localhost:5000"; // Python 后端地址
+    const BASE_URL = "http://localhost:8000"; // Python 后端地址
+
+    // const dataWasher = (data) => {
+    //     // 如果是数组，递归处理每一项
+    //     if (Array.isArray(data)) {
+    //         return data.map(item => dataWasher(item));
+    //     }
+
+    //     // 如果是对象，进行字段转换
+    //     if (typeof data === 'object' && data !== null) {
+    //         return {
+    //             ...data,
+    //             // 随机图床逻辑：如果没有 url，分配一个漂亮的随机封面
+    //             url: (data.url && data.url.trim() !== "") 
+    //                 ? data.url 
+    //                 : `https://picsum.photos/seed/${data.id || Math.random()}/300/300`,
+    //             // 如果内部有嵌套数组（比如歌单里的歌曲列表），递归清洗
+    //             songs: data.songs ? dataWasher(data.songs) : data.songs,
+    //             playlists: data.playlists ? dataWasher(data.playlists) : data.playlists
+    //         };
+    //     }
+    //     return data;
+    // };
+
+    const dataWasher = (data) => {
+        if (!data) return data;
+
+        // 处理数组 (例如 songs 列表)
+        if (Array.isArray(data)) {
+            return data.map(item => dataWasher(item));
+        }
+
+        // 处理对象
+        if (typeof data === 'object') {
+            // 创建副本，避免修改原始引用
+            const washed = { ...data };
+
+            // 核心逻辑：检查 url 字段
+            // 无论是歌单的 url 还是歌曲的 url，只要字段名是 url 且无效，就赋随机图
+            if (washed.hasOwnProperty('url')) {
+                if (!washed.url || washed.url.trim() === "" || washed.url === "未知链接") {
+                    // 使用 seed 保证同一 ID 拿到同一张随机图，300x300 分辨率
+                    washed.url = `https://picsum.photos/seed/${washed.id || Math.random()}/300/300`;
+                }
+            }
+
+            // 递归清洗子级 (如歌单对象里的 songs 数组)
+            if (washed.songs && Array.isArray(washed.songs)) {
+                washed.songs = dataWasher(washed.songs);
+            }
+            if (washed.playlists && Array.isArray(washed.playlists)) {
+                washed.playlists = dataWasher(washed.playlists);
+            }
+
+            return washed;
+        }
+
+        return data;
+    };
+
     // 获取当前用户 UID
     const getUID = () => {
         // 优先从内存读取，其次从本地存储读取
@@ -45,8 +104,7 @@
                 const res = await fetch(`${BASE_URL}/recommendations/popular`);
                 if (!res.ok) throw new Error();
                 const data = await res.json();
-                return data.playlists;
-
+                return dataWasher(data);
             } catch (error) {
                 console.warn("后端未响应，加载测试歌单...");
                 const mockResponse = list_Playlist_p_1;
@@ -122,7 +180,7 @@
                 if (!res.ok) throw new Error();
                 return await res.json();
             } catch (e) {
-                console.warn("[API] 获取[最近播放]失败，使用 测试数据");
+                console.warn("[API] 获取[最近播放]失败，使用测试数据");
                 // ID 12 
                 // 测试
                 return { count: 1, playlists: [{ playlist_id: 12, title: "最近播放", song_count: 5 }] };
@@ -164,13 +222,22 @@
         getPlaylistSongs : async (playlist_id) => {
             let resultData;
             const currentId = getUID(); // 拿到当前的 ID
-             console.log(`[API] 正在请求歌单详情，ID: ${playlist_id}, 用户ID: ${currentId}`);
+            
+            // 如果 ID 是 'recent'，直接调用最近播放接口，而不是拼凑 /songslists/recent
+            if (playlist_id === 'recent') {
+                return await window.API.getMyRecentPlaylist(currentId);
+            }
+             
+            console.log(`[API] 正在请求歌单详情，ID: ${playlist_id}, 用户ID: ${currentId}`);
 
             try {
                 //后端对接
                 const res = await fetch(`${BASE_URL}/songslists/${playlist_id}?user_id=${currentId}`);
                 if (!res.ok) throw new Error("Network response was not ok");
-                return await res.json();
+                // return await res.json();
+                const rawData = await res.json();
+                resultData = dataWasher(rawData);
+
             } catch (error) {
                 //映射完整逻辑，模拟后端
                 console.warn(`[API] 后端未响应，正在根据 ID ${playlist_id} 匹配测试集合...`);
@@ -255,7 +322,7 @@
         getPersonalRank: async (user_id) => {
             const currentId = getUID(); // 拿到当前的 ID
             try {
-                const res = await fetch(`${BASE_URL}/rank/?user_id=${currentId}`);
+                const res = await fetch(`${BASE_URL}/rank/users/?user_id=${currentId}`);
                 if (!res.ok) throw new Error("Network response was not ok");
                 const data = await res.json();
                 return data; 
@@ -472,7 +539,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        uid: uid, 
+                        uid: user_id, 
                         cookie: cookie
                     })
                 });
@@ -492,7 +559,7 @@
         //  登录逻辑：通过 Cookie 凭证登录   //  测试逻辑
         loginByCookie: async (cookie) => {
             if (cookie === "MURE_ADMIN_TOKEN_2025_GLOBAL") {
-                console.warn("[API] 检测到管理员凭证，开启超级权限模式");
+                console.warn("[API] 检测到管理员凭证");
                 return { 
                     success: true, 
                     user_id: "System_Admin", 

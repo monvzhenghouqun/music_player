@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+import uvicorn, os
 
 from basic_functions.operation_router import router as operation_router
 from discovery_functions.discovery_router import router as discovery_router
@@ -8,7 +10,19 @@ from my_functions.my_router import router as my_router
 from rank_functions.rank_router import router as rank_router
 
 app = FastAPI()
-origins = ["http://localhost:5173"]
+origins = [
+    "http://localhost:5173",
+    "http://localhost:8000",
+    "http://localhost:5000",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:5000",
+    "http://[::1]:*",
+]
+# origins = [
+#     "http://localhost:*",
+#     "http://127.0.0.1:*",
+#     "http://[::1]:*",
+# ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,10 +33,15 @@ app.add_middleware(
 )
 
 app.include_router(operation_router, prefix="", tags=["basic_functions"])
-app.include_router(discovery_router, prefix="/recommendation", tags=["discovery_functions"])
+app.include_router(discovery_router, prefix="/recommendations", tags=["discovery_functions"])
 app.include_router(my_router, prefix="/my", tags=["my_functions"])
 app.include_router(rank_router, prefix="/rank", tags=["rank_functions"])
 
+BASE_DIR = Path(__file__).parent.parent
+app.mount("/music_player/front_end", StaticFiles(directory=BASE_DIR / "front_end", html=True), name="front_end")
+
 
 if __name__ == "__main__":
+    from core.logger import setup_logging
+    setup_logging()
     uvicorn.run(app, host="0.0.0.0", port=8000)

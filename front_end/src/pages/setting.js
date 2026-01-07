@@ -16,9 +16,9 @@ async function fetchNewCookie() {
     const salt = "salt_2025";
     const generatedCookie = "MF_" + btoa(uid + salt).substring(0, 16);
 
-    // 界面反馈：禁用按钮防止重复点击
-    const btn = event?.target; 
-    if(btn) btn.disabled = true;
+    // // 界面反馈：禁用按钮防止重复点击
+    // const btn = event?.target; 
+    // if(btn) btn.disabled = true;
 
     try {
         const result = await window.API.registerByUID(uid, generatedCookie);
@@ -58,14 +58,14 @@ async function handleCookieLogin() {
         
         if (result.success) {
             // 核心：保存凭证和解析出来的真实 user_id
-            localStorage.setItem('active_cookie', inputCookie);
+            localStorage.setItem('cookie', inputCookie);
             localStorage.setItem('user_id', result.user_id); 
             
             checkLoginStatus();
             alert(`欢迎回来，UID: ${result.user_id}`);
             
             // 登录成功后刷新页面内容（如：加载我的歌单）
-            if (window.loadPage) loadPage('home'); 
+            // if (window.loadPage) loadPage('home'); 
         }
     } catch (error) {
         alert("验证失败: " + error.message);

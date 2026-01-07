@@ -26,7 +26,7 @@ async def get_playlists_1(user_id: Union[str, int]=Query(...)):
     logger.info(f"我喜欢-歌单信息已发送[get_playlists_1]")
     return data
 
-@router.get("/my_songlists_2_like")
+@router.get("/my_songlists_1_recent")
 async def get_playlists_2(user_id: Union[str, int]=Query(...)):
     data = await get_history_songs_information(user_id)
     logger.info(f"我查看-歌曲信息已发送[get_playlists_2]")

@@ -109,7 +109,7 @@
 // window.PageHandlers = window.PageHandlers || {};
 // window.PageHandlers.home = (_params) => home_page.init(_params);
 
-const home_page = {
+window.home_page = {
     async init(_params) {
 
         if (!window.API || !window.API.getPopularPlaylists) {
@@ -134,8 +134,8 @@ const home_page = {
 
         try {
             // 获取热门歌单数据
-            const playlists = await window.API.getPopularPlaylists();    // getPopularPlaylists
-            this.render(container, template, playlists);
+            const data = await window.API.getPopularPlaylists();    // getPopularPlaylists
+            this.render(container, template, data);
         } catch (error) {
             console.error("[Home] 渲染歌单失败:", error);
         }
@@ -220,6 +220,7 @@ const home_page = {
             if (card) {
                 card.onclick = () => {
                     console.log(`[Home] 点击了歌单: ${item.title} (ID: ${item.playlist_id})`);
+                    // console.log("歌单完整信息：", data);
                     loadPage('playlist', { id: item.playlist_id });
                 };
             }
@@ -232,4 +233,5 @@ const home_page = {
 };
 
 window.PageHandlers = window.PageHandlers || {};
-window.PageHandlers.home = (_params) => home_page.init(_params);
+// window.PageHandlers.home = (_params) => home_page.init(_params);
+window.PageHandlers.home = (_params) => window.home_page.init(_params);
