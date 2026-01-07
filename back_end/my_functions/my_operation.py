@@ -10,7 +10,7 @@ async def get_playlists_information_loved(user_id):
     logger.info(f"歌单信息已提取[get_playlists_information_loved]")
     
     data = {
-        'count': len(playlist_data),
+        'count': 1,
         'playlists': playlist_data
     }
     return data
@@ -30,7 +30,7 @@ async def get_history_songs_information(user_id):
 
 # 我创建的歌单
 async def get_playlists_information_private(user_id):
-    playlist_data = await db_operations.PlaylistTable.get_playlist_by_uid(user_id, type='private')
+    playlist_data = await db_operations.PlaylistTable.get_playlist_by_uid2(user_id, type='private')
     
     data = {
         'count': len(playlist_data),

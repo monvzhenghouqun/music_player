@@ -543,10 +543,15 @@ async def init_all_data():
     await init_user_playlist()
     logger.info('=====================数据初始化=====================\n')
 
+async def init_test_playlist_song():
+    await db_operations.PlaylistSongTable.add_song_to_playlist(12, 1)
+    await db_operations.PlaylistSongTable.add_song_to_playlist(12, 2)
+    await db_operations.PlaylistSongTable.add_song_to_playlist(12, 3)
+
 
 if __name__ == "__main__":
     from core.logger import setup_logging
     setup_logging()
 
     import asyncio
-    asyncio.run(init_all_data())
+    asyncio.run(init_test_playlist_song()) # init_all_data()

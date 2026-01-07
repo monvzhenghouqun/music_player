@@ -22,6 +22,8 @@ class PSBatch(BaseModel):
 
 class LikeToggle(BaseModel):
     user_id: Union[str, int]
+    song_id: Union[str, int]
+    is_loved: bool
     
 class PlayLogItem(BaseModel):
     song_id: str
@@ -84,7 +86,7 @@ async def post_ps_batch_delate(information: PSBatch):
 async def post_like_toggle(information: LikeToggle):
     input_information = information.model_dump()
     data = await post_like_toggle_information(input_information)
-    logger.info(f"歌曲已喜欢[post_like_toggle]")
+    logger.info(f"歌曲喜欢状态已改变[post_like_toggle]")
     return data
 
 @router.post('/analytics/batch_report')
@@ -118,7 +120,7 @@ async def post_auth_register(information: AuthRegister):
 async def post_auth_login(information: AuthLogin):
     input_information = information.model_dump()
     data = await post_auth_login_information(input_information)
-    logger.info(f"用户{input_information['uid']}登录信息已发送[post_auth_login]")
+    logger.info(f"用户登录信息已发送[post_auth_login]")
     return data
 
 

@@ -20,12 +20,12 @@ async def post_like_toggle_information(input_data):
 
     if is_loved:
         await db_operations.PlaylistSongTable.add_song_to_playlist(playlist_id, song_id)
-        logger.info(f"{user_id}歌曲{song_id}已喜欢")
+        logger.info(f"用户{user_id}：歌曲{song_id}已喜欢")
         return {"success": True, "message": "操作成功"}
     else:
         await db_operations.PlaylistSongTable.remove_song_from_playlist(playlist_id, song_id)
-        logger.info(f"{user_id}歌曲{song_id}取消喜欢")
-        return {"success": False, "message": "操作失败"}
+        logger.info(f"用户{user_id}：歌曲{song_id}取消喜欢")
+        return {"success": True, "message": "操作成功"}
 
 # 批量上报用户播放行为
 async def post_analytics_batch_report_information(input_data):

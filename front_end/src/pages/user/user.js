@@ -30,6 +30,19 @@
             const likedCount = document.getElementById('info-liked-count');
             const recentCount = document.getElementById('info-recent-count');
 
+            console.log('[User] initSpecialCards - likedCard exists:', !!likedCard, 'recentCard exists:', !!recentCard);
+
+            // 使用更简单的策略：先设置鼠标样式并清空可能存在的 onclick，
+            // 在拿到 API 数据后通过直接赋值 `element.onclick = ...` 替换处理器。
+            if (likedCard) {
+                likedCard.style.cursor = 'pointer';
+                likedCard.onclick = null;
+            }
+            if (recentCard) {
+                recentCard.style.cursor = 'pointer';
+                recentCard.onclick = null;
+            }
+
             // 加载 [我喜欢的音乐] ---
             // try {
             //     const likedData = await API.getMyLikedPlaylist(this.userId);
@@ -352,6 +365,7 @@
     // 挂载到全局
     window.PageHandlers = window.PageHandlers || {};
     window.PageHandlers.user = () => UserView.init();
-    window.UserView.init();
+    // 不在模块脚本中立即调用 init，交由路由器在加载页面后触发，
+    // 否则会导致页面脚本被初始化两次，出现重复事件监听/双重提示问题。
 
 })();

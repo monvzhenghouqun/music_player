@@ -42,12 +42,12 @@ def merge_two_lists(list_a, list_b):
     return final_result
 
 # 模糊搜索
-async def get_searh_information(content, user_id):
-    result = TreeOperation.search_avl_tree(content)
+async def get_searh_information(content):
+    result = await TreeOperation.search_avl_tree(content)
     if not result: return False
 
     for i in result['artists']:
-        i['title'] = i['title'] + '-' + i['artist']
+        i['title'] = i['title'] + '-' + "/".join(i['artist'])
 
     data = {
         'songs': merge_two_lists(result['songs'], result['artists'])
@@ -169,4 +169,4 @@ if __name__ == "__main__":
     setup_logging()
 
     import asyncio
-    asyncio.run(TreeOperation.search_avl_tree('理'))
+    asyncio.run(TreeOperation.train_avl_tree()) # TreeOperation.search_avl_tree('理')
