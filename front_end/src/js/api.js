@@ -606,7 +606,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        uid: user_id, 
+                        uid: uid, 
                         cookie: cookie
                     })
                 });
@@ -616,7 +616,7 @@
                     // 处理“用户已存在”或其他后端错误
                     throw new Error(data.message || "该 UID 已存在");
                 }
-                return data; // 预期返回 { success: true, cookie: "MF_xxxx" }
+                return data; // 预期返回 { success: true }
             } catch (error) {
                 console.error("[API] Register Error:", error);
                 throw error; 
